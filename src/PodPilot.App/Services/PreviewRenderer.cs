@@ -60,9 +60,9 @@ public static class PreviewRenderer
         RenderPopup(Path.Combine(folder, "popup-galaxy-buds.png"),
             new DeviceViewState(PodPilot.Core.Samsung.GalaxyBudsManager.ToSnapshot(PodPilot.Core.Samsung.GalaxyBudsModel.Buds2Pro, galaxy),
                 new PairedDeviceInfo("demo", "Galaxy Buds2 Pro (A1B2)", true), ScannerStatus.Scanning, 20, CanConnect: true));
-        foreach (var (percent, charging, light) in new (int?, bool, bool)[] { (null, false, false), (null, false, true), (85, false, false), (15, false, false), (60, true, false) })
+        foreach (var (percent, charging, light) in new[] { (85, false, false), (15, false, false), (60, true, false) })
             SavePng(TrayIcon.RenderTrayBitmap(percent, charging, light),
-                Path.Combine(folder, $"tray-{percent?.ToString() ?? "plain"}{(charging ? "-charging" : "")}{(light ? "-light" : "")}.png"));
+                Path.Combine(folder, $"tray-{percent}{(charging ? "-charging" : "")}{(light ? "-light" : "")}.png"));
         RenderPopup(Path.Combine(folder, "popup-searching.png"),
             new DeviceViewState(null, null, ScannerStatus.Scanning, 20));
     }

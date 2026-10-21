@@ -74,7 +74,7 @@ public sealed partial class TrayIcon : IDisposable
         {
             _lastKey = key;
             var old = _dynamicIcon;
-            _dynamicIcon = CreateIcon(RenderTrayBitmap(percent, lowest.Charging, Theme.TaskbarUsesLight));
+            _dynamicIcon = percent is null ? IntPtr.Zero : CreateIcon(RenderTrayBitmap(percent.Value, lowest.Charging, Theme.TaskbarUsesLight));
             _currentIcon = _dynamicIcon != IntPtr.Zero ? _dynamicIcon : _appIcon;
             Apply(NIM_MODIFY);
             if (old != IntPtr.Zero)
@@ -190,40 +190,32 @@ public sealed partial class TrayIcon : IDisposable
     }
 
     /// <summary>
-    /// A flat AirPods silhouette in the taskbar's text color, like the other tray icons.
-    /// With a level, a small battery bar sits under it: red when low, green while charging.
+    /// The PodPilot icon with a small battery bar under it (optional setting).
+    /// The bar is red when low and green while charging.
     /// </summary>
-    public static BitmapSource RenderTrayBitmap(int? percent, bool charging, bool lightTaskbar)
+    public static BitmapSource RenderTrayBitmap(int percent, bool charging, bool lightTaskbar)
     {
         int size = Math.Max(32, SmallIconSize * 2);
         var ink = lightTaskbar ? Color.FromRgb(28, 28, 30) : Colors.White;
-        var inkBrush = new SolidColorBrush(ink);
+        var fill = charging ? Color.FromRgb(52, 199, 89)
+            : percent <= 20 ? Color.FromRgb(255, 69, 58)
+            : ink;
 
-        double barHeight = percent is null ? 0 : Math.Round(size * 0.17);
-        double glyphHeight = percent is null ? size : size - barHeight - size * 0.08;
+        double barHeight = Math.Round(size * 0.17);
+        double barTop = size - barHeight;
+        double iconSize = barTop - size * 0.05;
 
         var visual = new DrawingVisual();
         using (var dc = visual.RenderOpen())
         {
-            // Two earbuds: a round head with the stem hanging from its inner side.
-            double scale = glyphHeight / size;
-            double offsetX = (size - size * scale) / 2;
-            dc.PushTransform(new MatrixTransform(scale, 0, 0, scale, offsetX, 0));
-            DrawPod(dc, inkBrush, size, centerX: 0.25, mirrored: false);
-            DrawPod(dc, inkBrush, size, centerX: 0.75, mirrored: true);
-            dc.Pop();
+            if (AppIconFrame(size) is { } icon)
+                dc.DrawImage(icon, new Rect((size - iconSize) / 2, 0, iconSize, iconSize));
 
-            if (percent is int level)
-            {
-                var fill = charging ? Color.FromRgb(52, 199, 89)
-                    : level <= 20 ? Color.FromRgb(255, 69, 58)
-                    : ink;
-                double top = size - barHeight, radius = barHeight / 2;
-                var track = new SolidColorBrush(Color.FromArgb(lightTaskbar ? (byte)60 : (byte)90, ink.R, ink.G, ink.B));
-                dc.DrawRoundedRectangle(track, null, new Rect(0, top, size, barHeight), radius, radius);
-                double width = Math.Max(barHeight, size * Math.Clamp(level, 0, 100) / 100.0);
-                dc.DrawRoundedRectangle(new SolidColorBrush(fill), null, new Rect(0, top, width, barHeight), radius, radius);
-            }
+            var track = new SolidColorBrush(Color.FromArgb(lightTaskbar ? (byte)60 : (byte)90, ink.R, ink.G, ink.B));
+            double radius = barHeight / 2;
+            dc.DrawRoundedRectangle(track, null, new Rect(0, barTop, size, barHeight), radius, radius);
+            double width = Math.Max(barHeight, size * Math.Clamp(percent, 0, 100) / 100.0);
+            dc.DrawRoundedRectangle(new SolidColorBrush(fill), null, new Rect(0, barTop, width, barHeight), radius, radius);
         }
 
         var bitmap = new RenderTargetBitmap(size, size, 96, 96, PixelFormats.Pbgra32);
@@ -231,19 +223,20 @@ public sealed partial class TrayIcon : IDisposable
         return bitmap;
     }
 
-    static void DrawPod(DrawingContext dc, Brush ink, double size, double centerX, bool mirrored)
+    static BitmapSource? AppIconFrame(int size)
     {
-        double cx = centerX * size;
-        double headRadius = size * 0.15;
-        double headY = size * 0.22;
-        double stemWidth = size * 0.1;
-        double side = mirrored ? -1 : 1;
-        double stemX = cx + side * (headRadius - stemWidth / 2) - stemWidth / 2;
-        // Stems splay a little outward, like a pair lying side by side.
-        dc.PushTransform(new RotateTransform(side * 7, cx, headY));
-        dc.DrawEllipse(ink, null, new Point(cx, headY), headRadius, headRadius * 1.1);
-        dc.DrawRoundedRectangle(ink, null, new Rect(stemX, headY, stemWidth, size * 0.72), stemWidth / 2, stemWidth / 2);
-        dc.Pop();
+        try
+        {
+            var decoder = BitmapDecoder.Create(new Uri("pack://application:,,,/Assets/podpilot.ico"),
+                BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+            // The smallest frame that is still at least as big as needed, for a sharp result.
+            return decoder.Frames.Where(f => f.PixelWidth >= size).OrderBy(f => f.PixelWidth).FirstOrDefault()
+                ?? decoder.Frames.OrderByDescending(f => f.PixelWidth).First();
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 
     /// <summary>Turns a WPF bitmap into a Win32 HICON with alpha.</summary>

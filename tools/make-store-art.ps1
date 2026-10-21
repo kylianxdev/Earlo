@@ -10,7 +10,7 @@ function New-Art([int]$width, [int]$height, [string]$file, [bool]$withName) {
     $bmp = New-Object System.Drawing.Bitmap $width, $height
     $g = [System.Drawing.Graphics]::FromImage($bmp)
     $g.SmoothingMode = 'AntiAlias'; $g.InterpolationMode = 'HighQualityBicubic'; $g.TextRenderingHint = 'AntiAliasGridFit'
-    $bg = New-Object System.Drawing.Drawing2D.LinearGradientBrush (New-Object System.Drawing.Point 0, 0), (New-Object System.Drawing.Point $width, $height), ([System.Drawing.Color]::FromArgb(255, 18, 64, 160)), ([System.Drawing.Color]::FromArgb(255, 88, 40, 170))
+    $bg = New-Object System.Drawing.Drawing2D.LinearGradientBrush (New-Object System.Drawing.Point 0, 0), (New-Object System.Drawing.Point $width, $height), ([System.Drawing.Color]::FromArgb(255, 44, 45, 50)), ([System.Drawing.Color]::FromArgb(255, 12, 12, 14))
     $g.FillRectangle($bg, 0, 0, $width, $height)
     $size = [int]([Math]::Min($width, $height) * 0.62)
     $top = if ($withName) { [int](($height - $size) / 2 - $height * 0.06) } else { [int](($height - $size) / 2) }
