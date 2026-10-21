@@ -2,9 +2,11 @@
 # Run from the unzipped driver folder in an elevated PowerShell:
 #   powershell -ExecutionPolicy Bypass -File install-driver.ps1
 #
-# Test-signed drivers only load when Windows test signing is on. This script does not change
-# that setting for you; see the instructions it prints.
+# Test-signed drivers only load when Windows test signing is on, or for one boot after choosing
+# "Disable driver signature enforcement" (F7) in Startup Settings. Pass -Force in that case.
+# This script does not change any boot or security setting for you.
 #Requires -RunAsAdministrator
+param([switch] $Force)
 
 $ErrorActionPreference = 'Stop'
 $here = $PSScriptRoot
@@ -14,15 +16,15 @@ $cer = Get-ChildItem $here -Filter '*.cer' | Select-Object -First 1
 if (-not (Test-Path $inf)) { throw "PodPilotAap.inf not found next to this script." }
 
 $testSigning = (bcdedit /enum '{current}' | Select-String 'testsigning\s+Yes') -ne $null
-if (-not $testSigning) {
+if (-not $testSigning -and -not $Force) {
     Write-Warning "Windows test signing is OFF, so this test-signed driver will not load."
     Write-Host ""
-    Write-Host "To enable it (this lowers security and can conflict with Secure Boot and game anti-cheat):"
-    Write-Host "  1. Run as administrator:  bcdedit /set testsigning on"
-    Write-Host "  2. Restart Windows"
-    Write-Host "  3. Run this script again"
+    Write-Host "Option A, one boot only (works with Secure Boot on):"
+    Write-Host "  Shift + Restart > Troubleshoot > Advanced options > Startup Settings > Restart > press F7,"
+    Write-Host "  then run:  install-driver.ps1 -Force"
     Write-Host ""
-    Write-Host "Undo later with:  bcdedit /set testsigning off"
+    Write-Host "Option B, permanent (needs Secure Boot off in your UEFI settings; breaks some anti-cheat):"
+    Write-Host "  bcdedit /set testsigning on, restart, run this script again. Undo: bcdedit /set testsigning off"
     exit 1
 }
 

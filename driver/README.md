@@ -30,12 +30,17 @@ Test-signed drivers only load with Windows test signing enabled, which lowers se
 (it can conflict with Secure Boot and game anti-cheat).
 
 1. Pair your AirPods with Windows.
-2. In an administrator terminal: `bcdedit /set testsigning on`, then restart.
-3. Download `PodPilotAap-driver-x64.zip` from the GitHub Actions artifacts or a release, and unzip it.
-4. In an administrator PowerShell in that folder: `powershell -ExecutionPolicy Bypass -File install-driver.ps1`.
+2. Download `PodPilotAap-driver-x64.zip` from the GitHub Actions artifacts or a release, and unzip it.
+3. Allow the test-signed driver, either way:
+   - **One boot only, Secure Boot stays on:** Shift + Restart > Troubleshoot > Advanced options > Startup Settings > Restart > press **F7**
+     ("Disable driver signature enforcement"). After the next normal restart everything is back to normal.
+   - **Permanent:** `bcdedit /set testsigning on` and restart. With Secure Boot on, Windows refuses this
+     ("protected by Secure Boot policy"); you would have to turn Secure Boot off in UEFI, which breaks some game anti-cheat (for example Riot Vanguard).
+4. In an administrator PowerShell in that folder: `powershell -ExecutionPolicy Bypass -File install-driver.ps1` (add `-Force` after the F7 boot).
 5. Start PodPilot. Noise control buttons appear when the channel is open.
 
-To remove it, run `uninstall-driver.ps1`, then `bcdedit /set testsigning off` and restart.
+If Memory integrity (Windows Security > Device security > Core isolation) is on, Windows may still block the driver.
+To remove it, run `uninstall-driver.ps1` (and `bcdedit /set testsigning off` if you turned it on).
 
 ## Building
 
