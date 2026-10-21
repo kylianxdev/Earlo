@@ -38,7 +38,7 @@
                 <CheckBox Content="{x:Static app:Strings.PopupOnConnect}" IsChecked="{Binding PopupOnConnect}" />
                 <DockPanel Margin="0,8,0,0">
                     <TextBlock DockPanel.Dock="Right" Width="40" TextAlignment="Right" VerticalAlignment="Center" Text="{Binding PopupSeconds, StringFormat={}{0} s}" />
-                    <TextBlock Text="{x:Static app:Strings.HideAfter}" VerticalAlignment="Center" Width="110" />
+                    <TextBlock Text="{x:Static app:Strings.HideAfter}" VerticalAlignment="Center" MinWidth="110" Margin="0,0,12,0" />
                     <Slider Minimum="3" Maximum="30" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding PopupSeconds}" VerticalAlignment="Center" />
                 </DockPanel>
 
@@ -50,7 +50,7 @@
                 <TextBlock Text="{x:Static app:Strings.EarDetection}" Style="{StaticResource SectionHeader}" />
                 <CheckBox Content="{x:Static app:Strings.PauseOnRemove}" IsChecked="{Binding EarDetection}" />
                 <DockPanel Margin="28,6,0,6" IsEnabled="{Binding EarDetection}">
-                    <TextBlock Text="{x:Static app:Strings.PauseWhen}" VerticalAlignment="Center" Width="82" />
+                    <TextBlock Text="{x:Static app:Strings.PauseWhen}" VerticalAlignment="Center" MinWidth="82" Margin="0,0,12,0" />
                     <ComboBox SelectedIndex="{Binding PauseMode}" MinWidth="200">
                         <ComboBoxItem Content="{x:Static app:Strings.PauseOne}" />
                         <ComboBoxItem Content="{x:Static app:Strings.PauseBoth}" />
@@ -72,7 +72,7 @@
                     <CheckBox x:Name="ConversationToggle" Content="{x:Static app:Strings.ConversationAwareness}" Click="OnConversationClick" />
                     <DockPanel x:Name="AdaptivePanel" Margin="0,8,0,0">
                         <TextBlock DockPanel.Dock="Right" Width="40" TextAlignment="Right" VerticalAlignment="Center" Text="{Binding Value, ElementName=AdaptiveSlider, StringFormat={}{0:0}}" />
-                        <TextBlock Text="{x:Static app:Strings.AdaptiveStrength}" VerticalAlignment="Center" Width="130" />
+                        <TextBlock Text="{x:Static app:Strings.AdaptiveStrength}" VerticalAlignment="Center" MinWidth="130" Margin="0,0,12,0" />
                         <Slider x:Name="AdaptiveSlider" Minimum="0" Maximum="100" TickFrequency="5" IsSnapToTickEnabled="True" VerticalAlignment="Center"
                                 Thumb.DragCompleted="OnAdaptiveDragCompleted" />
                     </DockPanel>
@@ -83,14 +83,14 @@
                 <CheckBox Content="{x:Static app:Strings.WarnLowBattery}" IsChecked="{Binding LowBatteryWarning}" />
                 <DockPanel Margin="28,8,0,0" IsEnabled="{Binding LowBatteryWarning}">
                     <TextBlock DockPanel.Dock="Right" Width="40" TextAlignment="Right" VerticalAlignment="Center" Text="{Binding LowBatteryThreshold, StringFormat={}{0}%}" />
-                    <TextBlock Text="{x:Static app:Strings.WarnAt}" VerticalAlignment="Center" Width="82" />
+                    <TextBlock Text="{x:Static app:Strings.WarnAt}" VerticalAlignment="Center" MinWidth="82" Margin="0,0,12,0" />
                     <Slider Minimum="10" Maximum="50" TickFrequency="10" IsSnapToTickEnabled="True" Value="{Binding LowBatteryThreshold}" VerticalAlignment="Center" />
                 </DockPanel>
 
                 <TextBlock Text="{x:Static app:Strings.Advanced}" Style="{StaticResource SectionHeader}" />
                 <DockPanel>
                     <TextBlock DockPanel.Dock="Right" Width="70" TextAlignment="Right" VerticalAlignment="Center" Text="{Binding RssiThreshold, StringFormat={}{0} dBm}" />
-                    <TextBlock Text="{x:Static app:Strings.DetectionRange}" VerticalAlignment="Center" Width="110" />
+                    <TextBlock Text="{x:Static app:Strings.DetectionRange}" VerticalAlignment="Center" MinWidth="110" Margin="0,0,12,0" />
                     <Slider Minimum="-95" Maximum="-40" TickFrequency="5" IsSnapToTickEnabled="True" Value="{Binding RssiThreshold}" VerticalAlignment="Center" />
                 </DockPanel>
                 <TextBlock Style="{StaticResource Hint}" Margin="0,4,0,0" Text="{x:Static app:Strings.RangeHint}" />

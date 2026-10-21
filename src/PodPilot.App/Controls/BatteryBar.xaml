@@ -22,7 +22,10 @@
             <Border x:Name="Fill" CornerRadius="4" HorizontalAlignment="Left" Width="0" Background="{DynamicResource BatteryGood}" />
         </Border>
 
-        <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+        <TextBlock x:Name="HintText" Grid.Column="1" Grid.ColumnSpan="2" FontSize="12" VerticalAlignment="Center"
+                   Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis" Visibility="Collapsed" />
+
+        <StackPanel x:Name="LevelPanel" Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
             <TextBlock x:Name="Bolt" Text="&#xE945;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="12"
                        Margin="0,1,4,0" VerticalAlignment="Center" Foreground="{DynamicResource BatteryGood}" Visibility="Collapsed" />
             <TextBlock x:Name="PercentText" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}" />

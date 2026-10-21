@@ -66,6 +66,25 @@ public partial class BatteryBar : UserControl
         }
     }
 
+    /// <summary>A grey line under the label, for when the level is unknown and the user can do something about it.</summary>
+    public string? Hint
+    {
+        get => _hint;
+        set
+        {
+            if (_hint == value)
+                return;
+            _hint = value;
+            // The hint replaces the empty bar and "--".
+            HintText.Text = value ?? string.Empty;
+            HintText.Visibility = value is null ? Visibility.Collapsed : Visibility.Visible;
+            Track.Visibility = LevelPanel.Visibility = value is null ? Visibility.Visible : Visibility.Hidden;
+            ToolTip = value is null ? null : Strings.CaseUnknownTip;
+        }
+    }
+
+    string? _hint;
+
     void OnTrackSizeChanged(object sender, SizeChangedEventArgs e) => Render(animate: false);
 
     void Render(bool animate)
@@ -81,7 +100,7 @@ public partial class BatteryBar : UserControl
 
         // A remembered level the device is not reporting right now: show it, but faded.
         Fill.Opacity = PercentText.Opacity = _state.Stale ? 0.45 : 1.0;
-        ToolTip = _state.Stale ? Strings.StaleBattery : null;
+        ToolTip = _state.Stale ? Strings.StaleBattery : _hint is null ? null : Strings.CaseUnknownTip;
 
         double target = Math.Max(Track.ActualWidth * (percent ?? 0) / 100.0, percent is null ? 0 : 8);
         if (animate && Track.ActualWidth > 0)

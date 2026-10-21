@@ -45,6 +45,7 @@ public partial class App : Application
     string? _volumeWatcherId;
     DateTime _osdQuietUntil;
     bool _connecting;
+    bool _disconnecting;
     DateTime _lastAutoConnect;
 
     protected override void OnStartup(StartupEventArgs e)
@@ -184,11 +185,11 @@ public partial class App : Application
         if (e.Args.Contains("--demo"))
             DemoMode.Start(_tracker, Dispatcher);
 
-        bool startHidden = e.Args.Contains("--minimized") || PackageInfo.StartedByStartupTask();
-        if (!_settings.FirstRunDone || !startHidden)
+        // PodPilot lives in the tray: clicking the icon opens the window.
+        if (!_settings.FirstRunDone)
         {
             _settings.FirstRunDone = true;
-            ShowSettings();
+            _tray.Notify("PodPilot", Strings.FirstRun);
         }
         Refresh();
     }
@@ -199,26 +200,24 @@ public partial class App : Application
     DeviceViewState CurrentState() =>
         new(CurrentSnapshot is { } snapshot ? _caseMemory.Apply(snapshot) : null,
             _paired.ConnectedDevice, _scanner.Status, _settings.LowBatteryThreshold, _aap.Current?.State,
-            CanConnect: ConnectTarget is not null, Connecting: _connecting);
+            CanConnect: ConnectTarget is not null, Connecting: _connecting, Disconnecting: _disconnecting);
 
     /// <summary>The paired earbuds the Connect button acts on: the connected ones, else the first paired.</summary>
     PairedDeviceInfo? ConnectTarget => _paired.ConnectedDevice ?? _paired.Devices.FirstOrDefault();
 
     async System.Threading.Tasks.Task ConnectAsync(bool connect)
     {
-        if (_connecting || ConnectTarget is not { } target)
+        if (_connecting || _disconnecting || ConnectTarget is not { } target)
             return;
-        _connecting = true;
+        _connecting = connect;
+        _disconnecting = !connect;
         Refresh();
         bool ok = await System.Threading.Tasks.Task.Run(() =>
             connect ? AudioEndpoints.Connect(target) : AudioEndpoints.Disconnect(target));
-        if (ok && connect)
-        {
-            // The connection event arrives a few seconds later; keep showing "Connecting..." until then.
-            for (int i = 0; i < 20 && _paired.ConnectedDevice is null; i++)
-                await System.Threading.Tasks.Task.Delay(500);
-        }
-        _connecting = false;
+        // Windows reports the new connection state a few seconds later; keep showing progress until then.
+        for (int i = 0; ok && i < 20 && (_paired.ConnectedDevice is not null) != connect; i++)
+            await System.Threading.Tasks.Task.Delay(500);
+        _connecting = _disconnecting = false;
         if (connect && _paired.ConnectedDevice is null)
             _tray?.Notify("PodPilot", Strings.ConnectFailed(target.Name));
         Refresh();

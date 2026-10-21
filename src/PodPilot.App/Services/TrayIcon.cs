@@ -103,7 +103,7 @@ public sealed partial class TrayIcon : IDisposable
             switch ((int)lParam & 0xFFFF)
             {
                 case WM_LBUTTONUP:
-                    ShowPopup?.Invoke(this, EventArgs.Empty);
+                    OpenSettings?.Invoke(this, EventArgs.Empty);
                     break;
                 case WM_LBUTTONDBLCLK:
                     OpenSettings?.Invoke(this, EventArgs.Empty);

@@ -40,6 +40,10 @@ public static class Strings
     public static string Connect => T("Connect", "Verbinden");
     public static string Connecting => T("Connecting...", "Verbinden...");
     public static string Disconnect => T("Disconnect", "Verbreken");
+    public static string Disconnecting => T("Disconnecting...", "Verbreken...");
+    public static string CaseUnknown => T("Put an earbud in the case to see it", "Leg een oortje in de case om dit te zien");
+    public static string CaseUnknownTip => T("AirPods only report the case battery while an earbud is in it.",
+        "AirPods geven de batterij van de case alleen door als er een oortje in zit.");
 
     // Noise control
     public static string ModeOff => T("Off", "Uit");
@@ -150,4 +154,6 @@ public static class Strings
     public static string ConnectFailed(string name) => T($"{name} did not connect. Make sure they are out of the case and nearby.",
         $"{name} kon niet verbinden. Zorg dat ze uit de case en dichtbij zijn.");
     public static string Volume => T("Volume", "Volume");
+    public static string FirstRun => T("PodPilot runs in the notification area. Click its icon to open it.",
+        "PodPilot staat in het systeemvak (bij de klok). Klik op het icoon om het te openen.");
 }

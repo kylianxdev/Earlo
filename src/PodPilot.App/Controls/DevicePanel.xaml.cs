@@ -72,6 +72,7 @@ public partial class DevicePanel : UserControl
         SingleBar.State = Exact(aap?.Single) ?? snapshot.Single;
         LeftBar.Placement = Placement(snapshot.LeftInEar, snapshot.LeftInCase, snapshot.Left.IsKnown);
         RightBar.Placement = Placement(snapshot.RightInEar, snapshot.RightInCase, snapshot.Right.IsKnown);
+        CaseBar.Hint = CaseBar.State.IsKnown ? null : Strings.CaseUnknown;
 
         bool hasNoiseControl = aap is not null && device.NoiseControl != NoiseControlSupport.None;
         NoiseBar.Visibility = hasNoiseControl ? Visibility.Visible : Visibility.Collapsed;
@@ -85,8 +86,10 @@ public partial class DevicePanel : UserControl
 
         _connected = connected;
         ConnectButton.Visibility = state.CanConnect ? Visibility.Visible : Visibility.Collapsed;
-        ConnectButton.IsEnabled = !state.Connecting;
-        ConnectButton.Content = state.Connecting ? Strings.Connecting : connected ? Strings.Disconnect : Strings.Connect;
+        ConnectButton.IsEnabled = !state.Connecting && !state.Disconnecting;
+        ConnectButton.Content = state.Connecting ? Strings.Connecting
+            : state.Disconnecting ? Strings.Disconnecting
+            : connected ? Strings.Disconnect : Strings.Connect;
     }
 
     void OnConnectClick(object sender, RoutedEventArgs e) => ConnectRequested?.Invoke(this, !_connected);
@@ -103,4 +106,4 @@ public partial class DevicePanel : UserControl
 
 public sealed record DeviceViewState(
     PodsSnapshot? Snapshot, PairedDeviceInfo? Connected, ScannerStatus ScannerStatus, int LowThreshold, AapState? Aap = null,
-    bool CanConnect = false, bool Connecting = false);
+    bool CanConnect = false, bool Connecting = false, bool Disconnecting = false);

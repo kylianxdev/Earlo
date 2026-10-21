@@ -16,7 +16,7 @@ public sealed class AppSettings : INotifyPropertyChanged
 
     bool _startWithWindows = true;
     bool _popupOnLidOpen = true;
-    bool _popupOnConnect = true;
+    bool _popupOnConnect;
     int _popupSeconds = 8;
     bool _earDetection = true;
     int _pauseMode;

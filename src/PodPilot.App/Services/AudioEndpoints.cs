@@ -13,7 +13,7 @@ namespace PodPilot.App.Services;
 public static class AudioEndpoints
 {
     const int DEVICE_STATE_ACTIVE = 0x1, DEVICE_STATE_UNPLUGGED = 0x8;
-    const int eRender = 0;
+    const int eRender = 0, eAll = 2;
     const int CLSCTX_ALL = 0x17;
     const int KSPROPERTY_ONESHOT_RECONNECT = 0, KSPROPERTY_ONESHOT_DISCONNECT = 1;
     const int KSPROPERTY_TYPE_GET = 1;
@@ -28,18 +28,22 @@ public static class AudioEndpoints
     /// <summary>Disconnects the headphones' audio, like Disconnect in Bluetooth settings.</summary>
     public static bool Disconnect(PairedDeviceInfo device) => SendOneShot(device, KSPROPERTY_ONESHOT_DISCONNECT);
 
+    /// <summary>
+    /// Sends the request to every endpoint of the device, speakers and microphone: music (A2DP) and
+    /// calls (Hands-Free) are separate links, and the device only counts as disconnected once both are.
+    /// </summary>
     static bool SendOneShot(PairedDeviceInfo target, int property)
     {
-        foreach (var device in Find(target, DEVICE_STATE_ACTIVE | DEVICE_STATE_UNPLUGGED))
+        bool accepted = false;
+        foreach (var device in Find(target, eAll, DEVICE_STATE_ACTIVE | DEVICE_STATE_UNPLUGGED))
         {
             try
             {
                 if (KsControlFor(device) is not { } control)
                     continue;
                 var request = new KSPROPERTY { Set = KSPROPSETID_BtAudio, Id = property, Flags = KSPROPERTY_TYPE_GET };
-                int hr = control.KsProperty(ref request, Marshal.SizeOf<KSPROPERTY>(), IntPtr.Zero, 0, out _);
-                if (hr >= 0)
-                    return true;
+                if (control.KsProperty(ref request, Marshal.SizeOf<KSPROPERTY>(), IntPtr.Zero, 0, out _) >= 0)
+                    accepted = true;
             }
             catch (Exception ex) when (ex is COMException or InvalidCastException)
             {
@@ -50,7 +54,7 @@ public static class AudioEndpoints
                 Marshal.ReleaseComObject(device);
             }
         }
-        return false;
+        return accepted;
     }
 
     /// <summary>
@@ -59,7 +63,7 @@ public static class AudioEndpoints
     /// </summary>
     public static VolumeWatcher? WatchVolume(PairedDeviceInfo target, Action<float, bool> changed)
     {
-        foreach (var device in Find(target, DEVICE_STATE_ACTIVE))
+        foreach (var device in Find(target, eRender, DEVICE_STATE_ACTIVE))
         {
             try
             {
@@ -79,7 +83,7 @@ public static class AudioEndpoints
     }
 
     /// <summary>Render endpoints (in the given states) that belong to the Bluetooth device.</summary>
-    static List<IMMDevice> Find(PairedDeviceInfo target, int states)
+    static List<IMMDevice> Find(PairedDeviceInfo target, int flow, int states)
     {
         var result = new List<IMMDevice>();
         IMMDeviceEnumerator? enumerator = null;
@@ -87,7 +91,7 @@ public static class AudioEndpoints
         try
         {
             enumerator = (IMMDeviceEnumerator)new MMDeviceEnumerator();
-            if (enumerator.EnumAudioEndpoints(eRender, states, out collection) < 0)
+            if (enumerator.EnumAudioEndpoints(flow, states, out collection) < 0)
                 return result;
             collection.GetCount(out int count);
             for (int i = 0; i < count; i++)

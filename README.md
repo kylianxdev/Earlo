@@ -124,7 +124,7 @@ and every purchase goes towards the signing certificate. PodPilot stays free and
 
 | Option | What it does |
 | --- | --- |
-| `--minimized` | Start in the tray without opening the settings window (used for autostart). |
+| `--minimized` | Still accepted for older autostart entries; PodPilot always starts in the tray now. |
 | `--demo` | Feed fake AirPods data, to try the app without headphones. |
 | `--log <file>` | Write every received AirPods message to a text file. Attach this to bug reports. |
 | `--render-preview <folder>` | Render the popup for several models to PNG files. |
