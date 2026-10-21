@@ -26,10 +26,17 @@ jobs:
         shell: pwsh
         run: |
           foreach ($rid in 'win-x64', 'win-arm64') {
+            # Standalone: runs anywhere, trimmed and compressed (see PodPilot.App.csproj).
             dotnet publish src/PodPilot.App -c Release -r $rid --self-contained `
               -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o "publish/$rid"
-            Compress-Archive -Path "publish/$rid/*" -DestinationPath "PodPilot-$rid.zip" -Force
+            Compress-Archive -Path "publish/$rid/PodPilot.exe" -DestinationPath "PodPilot-$rid.zip" -Force
+
+            # Small: needs the .NET 10 Desktop Runtime installed.
+            dotnet publish src/PodPilot.App -c Release -r $rid --self-contained false `
+              -p:PublishSingleFile=true -o "publish/$rid-small"
+            Compress-Archive -Path "publish/$rid-small/PodPilot.exe" -DestinationPath "PodPilot-$rid-small.zip" -Force
           }
+          Get-ChildItem PodPilot-*.zip | ForEach-Object { "{0}: {1:N1} MB" -f $_.Name, ($_.Length / 1MB) }
 
       - uses: actions/upload-artifact@v4
         with:

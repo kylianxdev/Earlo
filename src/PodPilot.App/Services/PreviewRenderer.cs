@@ -31,6 +31,8 @@ public static class PreviewRenderer
         };
         RenderPopup(Path.Combine(folder, "popup-noise-control.png"),
             new DeviceViewState(DemoMode.Snapshot(), connected, ScannerStatus.Scanning, 20, aap));
+        RenderPopup(Path.Combine(folder, "popup-ear-detection.png"),
+            new DeviceViewState(DemoMode.RightOutSnapshot(), connected, ScannerStatus.Scanning, 20));
         RenderPopup(Path.Combine(folder, "popup-airpods-4.png"),
             new DeviceViewState(DemoMode.Snapshot(0x1920, 100, 90, 15, false), null, ScannerStatus.Scanning, 20));
         RenderPopup(Path.Combine(folder, "popup-airpods-max.png"),

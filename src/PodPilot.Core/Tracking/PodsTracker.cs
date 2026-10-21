@@ -69,6 +69,8 @@ public sealed class PodsTracker(TimeProvider? timeProvider = null)
             entry.Single.Update(message.SingleBattery, message.SingleCharging, now, PodHold),
             message.LeftInEar,
             message.RightInEar,
+            message.LeftInCase,
+            message.RightInCase,
             message.AnyPodInCase,
             message.LidOpen,
             (int)Math.Round(entry.SmoothedRssi),
@@ -140,6 +142,7 @@ public sealed class PodsTracker(TimeProvider? timeProvider = null)
     static bool SameVisibleState(PodsSnapshot a, PodsSnapshot b) =>
         a.Left == b.Left && a.Right == b.Right && a.Case == b.Case && a.Single == b.Single
         && a.LeftInEar == b.LeftInEar && a.RightInEar == b.RightInEar
+        && a.LeftInCase == b.LeftInCase && a.RightInCase == b.RightInCase
         && a.LidOpen == b.LidOpen && a.AnyPodInCase == b.AnyPodInCase;
 
     sealed class Entry

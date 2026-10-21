@@ -20,6 +20,14 @@ public static class DemoMode
         return tracker.Current!;
     }
 
+    /// <summary>Left AirPod in the ear, right one taken out, case level remembered.</summary>
+    public static PodsSnapshot RightOutSnapshot()
+    {
+        var tracker = new PodsTracker();
+        tracker.Process(Message(DemoModel, 85, 75, null, leftInEar: true), -40);
+        return tracker.Current! with { Case = new BatteryState(55, false, Stale: true) };
+    }
+
     public static void Start(PodsTracker tracker, Dispatcher dispatcher)
     {
         int step = 0;

@@ -59,6 +59,27 @@ public class ProximityPairingMessageTests
         Assert.Equal(85, msg.RightBattery);
     }
 
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    public void Reads_which_pod_is_in_the_case(bool left, bool right)
+    {
+        var data = ProximityPairingPayload.Build(0x1420, 80, 70, 50, leftInCase: left, rightInCase: right);
+        Assert.True(ProximityPairingMessage.TryParse(data, out var msg));
+        Assert.Equal((left, right), (msg.LeftInCase, msg.RightInCase));
+    }
+
+    [Fact]
+    public void In_case_follows_the_broadcasting_pod()
+    {
+        // Status 0x50: right pod broadcasts (bit 5 clear) and is in the case (bit 6); left is out.
+        Assert.True(ProximityPairingMessage.TryParse(Hex("07 19 01 14 20 40 78 8F 01 00"), out var msg));
+        Assert.True(msg.RightInCase);
+        Assert.False(msg.LeftInCase);
+    }
+
     [Fact]
     public void Lid_closed_when_bit_3_set()
     {

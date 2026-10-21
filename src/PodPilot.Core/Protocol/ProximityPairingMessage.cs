@@ -52,6 +52,14 @@ public sealed record ProximityPairingMessage
 
     public bool AnyPodInCase => PrimaryInCase || BothInCase || OneInCase;
 
+    // Bit 6: the broadcasting pod is in the case. Bit 4: one pod is in the case (the other one
+    // when bit 6 is clear). Bit 2: both are in the case.
+    bool OtherInCase => BothInCase || (OneInCase && !PrimaryInCase);
+
+    public bool LeftInCase => BothInCase || (LeftIsPrimary ? PrimaryInCase : OtherInCase);
+
+    public bool RightInCase => BothInCase || (LeftIsPrimary ? OtherInCase : PrimaryInCase);
+
     public bool ReportsPods => LeftBattery.HasValue || RightBattery.HasValue || CaseBattery.HasValue;
 
     public static bool TryParse(ReadOnlySpan<byte> data, [NotNullWhen(true)] out ProximityPairingMessage? message)

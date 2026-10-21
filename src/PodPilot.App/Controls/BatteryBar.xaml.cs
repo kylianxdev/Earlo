@@ -49,6 +49,10 @@ public partial class BatteryBar : UserControl
             : "BatteryGood";
         Fill.SetResourceReference(Border.BackgroundProperty, brush);
 
+        // A remembered level the device is not reporting right now: show it, but faded.
+        Fill.Opacity = PercentText.Opacity = _state.Stale ? 0.45 : 1.0;
+        ToolTip = _state.Stale ? "Last known level. The case reports its battery when an AirPod is in it." : null;
+
         double target = Math.Max(Track.ActualWidth * (percent ?? 0) / 100.0, percent is null ? 0 : 8);
         if (animate && Track.ActualWidth > 0)
         {

@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using PodPilot.App.Services;
 
 namespace PodPilot.App;
 
@@ -12,7 +13,6 @@ public sealed class AppSettings : INotifyPropertyChanged
 {
     static readonly string Folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PodPilot");
     static readonly string FilePath = Path.Combine(Folder, "settings.json");
-    static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
     bool _startWithWindows = true;
     bool _popupOnLidOpen = true;
@@ -59,7 +59,7 @@ public sealed class AppSettings : INotifyPropertyChanged
         try
         {
             if (File.Exists(FilePath))
-                return JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(FilePath)) ?? new AppSettings();
+                return JsonSerializer.Deserialize(File.ReadAllText(FilePath), PodPilotJsonContext.Default.AppSettings) ?? new AppSettings();
         }
         catch (Exception)
         {
@@ -82,7 +82,7 @@ public sealed class AppSettings : INotifyPropertyChanged
         try
         {
             Directory.CreateDirectory(Folder);
-            File.WriteAllText(FilePath, JsonSerializer.Serialize(this, JsonOptions));
+            File.WriteAllText(FilePath, JsonSerializer.Serialize(this, PodPilotJsonContext.Default.AppSettings));
         }
         catch (IOException)
         {

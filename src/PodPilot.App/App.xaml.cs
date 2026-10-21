@@ -22,6 +22,7 @@ public partial class App : Application
     readonly PairedDeviceMonitor _paired = new();
     readonly MediaController _media = new();
     readonly AapDeviceManager _aap = new();
+    readonly CaseBatteryMemory _caseMemory = new();
 
     Mutex? _instanceMutex;
     EventWaitHandle? _activateEvent;
@@ -37,13 +38,25 @@ public partial class App : Application
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
-        DispatcherUnhandledException += (_, ex) => ex.Handled = true; // never crash the tray app on a UI glitch
+        // Never crash the tray app on a UI glitch, but keep a record for bug reports.
+        DispatcherUnhandledException += (_, ex) =>
+        {
+            CrashLog.Write(ex.Exception);
+            ex.Handled = true;
+        };
 
         int previewIndex = Array.IndexOf(e.Args, "--render-preview");
         if (previewIndex >= 0)
         {
             Theme.Apply(this);
-            PreviewRenderer.Render(e.Args.ElementAtOrDefault(previewIndex + 1) ?? "preview");
+            try
+            {
+                PreviewRenderer.Render(e.Args.ElementAtOrDefault(previewIndex + 1) ?? "preview");
+            }
+            catch (Exception ex)
+            {
+                CrashLog.Write(ex);
+            }
             Shutdown();
             return;
         }
@@ -119,7 +132,8 @@ public partial class App : Application
     }
 
     DeviceViewState CurrentState() =>
-        new(_tracker.Current, _paired.ConnectedDevice, _scanner.Status, _settings.LowBatteryThreshold, _aap.Current?.State);
+        new(_tracker.Current is { } snapshot ? _caseMemory.Apply(snapshot) : null,
+            _paired.ConnectedDevice, _scanner.Status, _settings.LowBatteryThreshold, _aap.Current?.State);
 
     void OnUpdated(PodsSnapshot snapshot)
     {

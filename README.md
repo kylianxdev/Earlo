@@ -10,13 +10,14 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/popup-airpods-pro.png" width="380" alt="PodPilot popup showing AirPods Pro battery levels">
+  <img src="docs/screenshots/popup-ear-detection.png" width="380" alt="PodPilot popup showing AirPods Pro battery levels and which earbud is in your ear">
 </p>
 
 ## Features
 
 - **Popup when you open the case**, like on an iPhone: model, left and right earbud, case, charging state.
 - **Live battery levels** in the tray icon (the lowest level as a number) and its tooltip.
+- **See each earbud**: in your ear, out of your ear or in the case, updated live.
 - **Automatic ear detection**: take an AirPod out and Spotify, YouTube or any other app pauses; put it back in and playback resumes. It works with every app that shows up in the Windows media controls.
 - **Low battery warnings** for each earbud and the case.
 - **Works with every AirPods and Beats model** (see below). Models released after this version still show their battery levels.
@@ -45,12 +46,14 @@ If that happens, please [open an issue](../../issues) with a diagnostics log (se
 
 ## Install
 
-1. Download `PodPilot-win-x64.zip` (or `win-arm64`) from the [latest release](../../releases/latest).
-2. Unzip it anywhere, for example `C:\Program Files\PodPilot` or your Documents folder.
+1. Download from the [latest release](../../releases/latest):
+   - `PodPilot-win-x64.zip`: standalone, runs on any PC (about 32 MB).
+   - `PodPilot-win-x64-small.zip`: about 9 MB, but needs the [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) (Windows offers to install it on first start).
+   - `win-arm64` versions for ARM PCs.
+2. Unzip it anywhere, for example your Documents folder. It is a single `PodPilot.exe`.
 3. Run `PodPilot.exe`. It sits in the notification area (next to the clock).
 
 Requirements: Windows 10 version 2004 or newer, or Windows 11, with a Bluetooth 4.0 (LE) adapter.
-The release is self-contained, so you do not need to install .NET.
 
 Pair your AirPods with Windows as usual (Settings > Bluetooth & devices > Add device, then hold the button on the case).
 Pairing is optional for battery levels, but needed for your device name and for ear detection.

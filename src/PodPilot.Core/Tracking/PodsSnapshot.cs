@@ -2,7 +2,8 @@ using PodPilot.Core.Devices;
 
 namespace PodPilot.Core.Tracking;
 
-public readonly record struct BatteryState(int? Percent, bool Charging)
+/// <param name="Stale">True for a remembered level that the device is not reporting right now.</param>
+public readonly record struct BatteryState(int? Percent, bool Charging, bool Stale = false)
 {
     public static readonly BatteryState Unknown = new(null, false);
 
@@ -19,6 +20,8 @@ public sealed record PodsSnapshot(
     BatteryState Single,
     bool LeftInEar,
     bool RightInEar,
+    bool LeftInCase,
+    bool RightInCase,
     bool AnyPodInCase,
     bool LidOpen,
     int Rssi,

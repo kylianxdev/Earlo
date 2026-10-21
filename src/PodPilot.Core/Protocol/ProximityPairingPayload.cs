@@ -8,13 +8,16 @@ public static class ProximityPairingPayload
         int? left, int? right, int? caseBattery,
         bool leftCharging = false, bool rightCharging = false, bool caseCharging = false,
         bool leftInEar = false, bool rightInEar = false,
-        bool bothInCase = false, bool lidOpen = false, byte color = 0)
+        bool bothInCase = false, bool lidOpen = false, byte color = 0,
+        bool leftInCase = false, bool rightInCase = false)
     {
         // Always encode as "left is primary" so no fields are swapped.
         byte status = 0x20;
         if (leftInEar) status |= 0x02;
         if (rightInEar) status |= 0x08;
-        if (bothInCase) status |= 0x04 | 0x40;
+        if (bothInCase || (leftInCase && rightInCase)) status |= 0x04 | 0x40;
+        else if (leftInCase) status |= 0x40;
+        else if (rightInCase) status |= 0x10;
 
         int charge = (leftCharging ? 0x1 : 0) | (rightCharging ? 0x2 : 0) | (caseCharging ? 0x4 : 0);
 
