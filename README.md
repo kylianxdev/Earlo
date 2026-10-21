@@ -201,7 +201,8 @@ The message format is documented by the reverse-engineering work of the communit
 [LibrePods](https://github.com/kavishdevar/librepods) and [furiousMAC/continuity](https://github.com/furiousMAC/continuity).
 The Galaxy Buds message format is documented by [GalaxyBudsClient](https://github.com/timschneeb/GalaxyBudsClient) (no code was copied).
 PodPilot is inspired by MagicPods, but shares no code with it.
-The product renders in `src/PodPilot.App/Assets/Devices` are AI-generated illustrations, not Apple photos.
+The AirPods and Beats renders in `src/PodPilot.App/Assets/Devices` are AI-generated illustrations, not Apple photos.
+The Galaxy Buds renders are 3D models made with [`tools/render-galaxy-buds.py`](tools/render-galaxy-buds.py) (Blender), not Samsung photos.
 
 ## License
 

@@ -36,6 +36,19 @@ public static class DeviceImages
         [0x0520] = "beats-flex",
         [0x0D20] = "beats-flex",
         [0x1020] = "beats-flex",
+
+        // Galaxy Buds, by GalaxyBudsModels.CatalogId (rendered with tools/render-galaxy-buds.py).
+        [0x5300] = "galaxy-buds",
+        [0x5301] = "galaxy-buds-plus",
+        [0x5302] = "galaxy-buds-live",
+        [0x5303] = "galaxy-buds-pro",
+        [0x5304] = "galaxy-buds2",
+        [0x5305] = "galaxy-buds2-pro",
+        [0x5306] = "galaxy-buds-fe",
+        [0x5307] = "galaxy-buds3",
+        [0x5308] = "galaxy-buds3-pro",
+        [0x5309] = "galaxy-buds3-fe",
+        [0x530A] = "galaxy-buds-core",
     };
 
     static readonly Dictionary<string, ImageSource?> Cache = [];
