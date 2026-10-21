@@ -1,0 +1,82 @@
+<Window x:Class="PodPilot.App.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="clr-namespace:PodPilot.App.Controls"
+        Title="PodPilot" Width="860" Height="640" MinWidth="720" MinHeight="480"
+        WindowStartupLocation="CenterScreen" Icon="pack://application:,,,/Assets/podpilot.ico">
+    <Grid Margin="24">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="380" />
+            <ColumnDefinition Width="24" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Live device status -->
+        <StackPanel>
+            <Border CornerRadius="16" Padding="20" Background="{DynamicResource SubtleFill}" BorderBrush="{DynamicResource PopupBorder}" BorderThickness="1">
+                <c:DevicePanel x:Name="Panel" />
+            </Border>
+            <WrapPanel Margin="0,12,0,0">
+                <Button Content="Show popup" Click="OnShowPopupClick" Margin="0,0,8,8" />
+                <Button Content="Bluetooth settings" Click="OnBluetoothClick" Margin="0,0,8,8" />
+            </WrapPanel>
+            <TextBlock x:Name="PairedText" Style="{StaticResource Hint}" Margin="0,4,0,0" />
+        </StackPanel>
+
+        <!-- Settings -->
+        <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="0,0,12,0">
+                <TextBlock Text="Settings" FontSize="26" FontWeight="SemiBold" />
+
+                <TextBlock Text="General" Style="{StaticResource SectionHeader}" />
+                <CheckBox Content="Start PodPilot with Windows" IsChecked="{Binding StartWithWindows}" />
+                <CheckBox Content="Show battery level in the tray icon" IsChecked="{Binding TrayShowsBattery}" />
+
+                <TextBlock Text="Popup" Style="{StaticResource SectionHeader}" />
+                <CheckBox Content="Show popup when the case is opened" IsChecked="{Binding PopupOnLidOpen}" />
+                <CheckBox Content="Show popup when headphones connect" IsChecked="{Binding PopupOnConnect}" />
+                <DockPanel Margin="0,8,0,0">
+                    <TextBlock DockPanel.Dock="Right" Width="40" TextAlignment="Right" VerticalAlignment="Center" Text="{Binding PopupSeconds, StringFormat={}{0} s}" />
+                    <TextBlock Text="Hide after" VerticalAlignment="Center" Width="110" />
+                    <Slider Minimum="3" Maximum="30" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding PopupSeconds}" VerticalAlignment="Center" />
+                </DockPanel>
+
+                <TextBlock Text="Automatic ear detection" Style="{StaticResource SectionHeader}" />
+                <CheckBox Content="Pause media when you take an AirPod out" IsChecked="{Binding EarDetection}" />
+                <DockPanel Margin="28,6,0,6" IsEnabled="{Binding EarDetection}">
+                    <TextBlock Text="Pause when" VerticalAlignment="Center" Width="82" />
+                    <ComboBox SelectedIndex="{Binding PauseMode}" MinWidth="200">
+                        <ComboBoxItem Content="one AirPod is removed" />
+                        <ComboBoxItem Content="both AirPods are removed" />
+                    </ComboBox>
+                </DockPanel>
+                <CheckBox Content="Resume when you put them back in" Margin="28,0,0,0" IsChecked="{Binding ResumeOnInsert}" IsEnabled="{Binding EarDetection}" />
+                <CheckBox Content="Only when the AirPods are connected to this PC" Margin="28,4,0,0" IsChecked="{Binding RequireConnected}" IsEnabled="{Binding EarDetection}" />
+                <TextBlock Style="{StaticResource Hint}" Text="Works with Spotify, browsers, Media Player and every app that shows up in the Windows media controls." />
+
+                <TextBlock Text="Notifications" Style="{StaticResource SectionHeader}" />
+                <CheckBox Content="Warn when the battery is low" IsChecked="{Binding LowBatteryWarning}" />
+                <DockPanel Margin="28,8,0,0" IsEnabled="{Binding LowBatteryWarning}">
+                    <TextBlock DockPanel.Dock="Right" Width="40" TextAlignment="Right" VerticalAlignment="Center" Text="{Binding LowBatteryThreshold, StringFormat={}{0}%}" />
+                    <TextBlock Text="Warn at" VerticalAlignment="Center" Width="82" />
+                    <Slider Minimum="10" Maximum="50" TickFrequency="10" IsSnapToTickEnabled="True" Value="{Binding LowBatteryThreshold}" VerticalAlignment="Center" />
+                </DockPanel>
+
+                <TextBlock Text="Advanced" Style="{StaticResource SectionHeader}" />
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Right" Width="70" TextAlignment="Right" VerticalAlignment="Center" Text="{Binding RssiThreshold, StringFormat={}{0} dBm}" />
+                    <TextBlock Text="Detection range" VerticalAlignment="Center" Width="110" />
+                    <Slider Minimum="-95" Maximum="-40" TickFrequency="5" IsSnapToTickEnabled="True" Value="{Binding RssiThreshold}" VerticalAlignment="Center" />
+                </DockPanel>
+                <TextBlock Style="{StaticResource Hint}" Margin="0,4,0,0" Text="Lower values detect AirPods further away. Raise it if a colleague's AirPods show up instead of yours." />
+
+                <TextBlock Text="About" Style="{StaticResource SectionHeader}" />
+                <TextBlock x:Name="VersionText" Opacity="0.8" />
+                <TextBlock Margin="0,4,0,0">
+                    <Hyperlink NavigateUri="https://github.com/kylianxdev/PodPilot" RequestNavigate="OnLinkNavigate">github.com/kylianxdev/PodPilot</Hyperlink>
+                </TextBlock>
+                <TextBlock Style="{StaticResource Hint}" Margin="0,8,0,24" Text="PodPilot is free and open source. AirPods and Beats are trademarks of Apple Inc. This project is not affiliated with Apple." />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>

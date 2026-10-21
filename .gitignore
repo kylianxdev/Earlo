@@ -1,0 +1,9 @@
+bin/
+obj/
+publish/
+preview/
+*.user
+.vs/
+.vscode/
+TestResults/
+podpilot-log.txt

@@ -1,0 +1,24 @@
+<UserControl x:Class="PodPilot.App.Controls.BatteryBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Height="30">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="58" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="64" />
+        </Grid.ColumnDefinitions>
+
+        <TextBlock x:Name="LabelText" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource TextSecondary}" />
+
+        <Border x:Name="Track" Grid.Column="1" Height="8" CornerRadius="4" VerticalAlignment="Center"
+                Background="{DynamicResource BarTrack}" SizeChanged="OnTrackSizeChanged">
+            <Border x:Name="Fill" CornerRadius="4" HorizontalAlignment="Left" Width="0" Background="{DynamicResource BatteryGood}" />
+        </Border>
+
+        <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+            <TextBlock x:Name="Bolt" Text="&#xE945;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="12"
+                       Margin="0,1,4,0" VerticalAlignment="Center" Foreground="{DynamicResource BatteryGood}" Visibility="Collapsed" />
+            <TextBlock x:Name="PercentText" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{DynamicResource TextPrimary}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

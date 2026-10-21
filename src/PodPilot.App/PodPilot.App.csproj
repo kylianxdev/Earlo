@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyName>PodPilot</AssemblyName>
+    <RootNamespace>PodPilot.App</RootNamespace>
+    <ApplicationIcon>Assets\podpilot.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Version>0.1.0</Version>
+    <Product>PodPilot</Product>
+    <Description>Open-source AirPods and Beats companion for Windows</Description>
+    <Copyright>PodPilot contributors</Copyright>
+    <!-- WPF0001: ThemeMode (Fluent) is marked experimental. WFO0003: DPI is set in the manifest for WPF, not WinForms. -->
+    <NoWarn>$(NoWarn);WPF0001;WFO0003</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\podpilot.ico" />
+    <Resource Include="Assets\Devices\*.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PodPilot.Core\PodPilot.Core.csproj" />
+  </ItemGroup>
+
+</Project>
