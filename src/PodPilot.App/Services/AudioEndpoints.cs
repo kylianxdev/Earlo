@@ -12,7 +12,7 @@ namespace PodPilot.App.Services;
 /// </summary>
 public static class AudioEndpoints
 {
-    const int DEVICE_STATE_ACTIVE = 0x1, DEVICE_STATE_UNPLUGGED = 0x8;
+    const int DEVICE_STATE_ACTIVE = 0x1, DEVICE_STATEMASK_ALL = 0xF;
     const int eRender = 0, eAll = 2;
     const int CLSCTX_ALL = 0x17;
     const int KSPROPERTY_ONESHOT_RECONNECT = 0, KSPROPERTY_ONESHOT_DISCONNECT = 1;
@@ -35,7 +35,8 @@ public static class AudioEndpoints
     static bool SendOneShot(PairedDeviceInfo target, int property)
     {
         bool accepted = false;
-        foreach (var device in Find(target, eAll, DEVICE_STATE_ACTIVE | DEVICE_STATE_UNPLUGGED))
+        // All states: a microphone the user disabled in Windows still keeps the Hands-Free link up.
+        foreach (var device in Find(target, eAll, DEVICE_STATEMASK_ALL))
         {
             try
             {
