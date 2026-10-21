@@ -73,7 +73,7 @@ public sealed partial class TrayIcon : IDisposable
         {
             _lastKey = key;
             var old = _dynamicIcon;
-            _dynamicIcon = key == "app" ? IntPtr.Zero : RenderNumberIcon(lowest.Percent!.Value, lowest.Charging, Theme.TaskbarUsesLight);
+            _dynamicIcon = key == "app" ? IntPtr.Zero : RenderBatteryIcon(lowest.Percent!.Value, lowest.Charging, Theme.TaskbarUsesLight);
             _currentIcon = _dynamicIcon != IntPtr.Zero ? _dynamicIcon : _appIcon;
             Apply(NIM_MODIFY);
             if (old != IntPtr.Zero)
@@ -188,30 +188,58 @@ public sealed partial class TrayIcon : IDisposable
         }
     }
 
-    static IntPtr RenderNumberIcon(int percent, bool charging, bool lightTaskbar)
+    static IntPtr RenderBatteryIcon(int percent, bool charging, bool lightTaskbar) =>
+        CreateIcon(RenderBatteryBitmap(percent, charging, lightTaskbar));
+
+    /// <summary>
+    /// The PodPilot icon with a small battery bar under it, so the tray shows both what it is and
+    /// how full the earbuds are. Red when low, green while charging.
+    /// </summary>
+    public static BitmapSource RenderBatteryBitmap(int percent, bool charging, bool lightTaskbar)
     {
         int size = Math.Max(32, SmallIconSize * 2);
-        var color = percent <= 20 && !charging
-            ? Color.FromRgb(255, 69, 58)
-            : lightTaskbar ? Color.FromRgb(28, 28, 30) : Colors.White;
-        var brush = new SolidColorBrush(color);
+        var ink = lightTaskbar ? Color.FromRgb(28, 28, 30) : Colors.White;
+        var fill = charging ? Color.FromRgb(52, 199, 89)
+            : percent <= 20 ? Color.FromRgb(255, 69, 58)
+            : ink;
 
-        var text = new FormattedText(percent.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture,
-            FlowDirection.LeftToRight, new Typeface(new FontFamily("Segoe UI"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal),
-            size * (percent >= 100 ? 0.47 : 0.69), brush, 1.0);
+        double barHeight = Math.Round(size * 0.19);
+        double barTop = size - barHeight;
+        double iconSize = barTop - size * 0.04;
 
         var visual = new DrawingVisual();
         using (var dc = visual.RenderOpen())
         {
-            dc.DrawText(text, new Point((size - text.Width) / 2, (size * 0.9 - text.Height) / 2));
-            var bar = charging ? new SolidColorBrush(Color.FromRgb(52, 199, 89)) : brush;
-            double width = (size - size / 4.0) * Math.Clamp(percent, 5, 100) / 100.0;
-            dc.DrawRectangle(bar, null, new Rect(size / 8.0, size * 0.84, width, size / 8.0));
+            if (AppIconFrame(size) is { } icon)
+                dc.DrawImage(icon, new Rect((size - iconSize) / 2, 0, iconSize, iconSize));
+
+            // Track, then the level on top of it.
+            var track = new SolidColorBrush(Color.FromArgb(lightTaskbar ? (byte)60 : (byte)90, ink.R, ink.G, ink.B));
+            double radius = barHeight / 2;
+            dc.DrawRoundedRectangle(track, null, new Rect(0, barTop, size, barHeight), radius, radius);
+            double width = Math.Max(barHeight, size * Math.Clamp(percent, 0, 100) / 100.0);
+            dc.DrawRoundedRectangle(new SolidColorBrush(fill), null, new Rect(0, barTop, width, barHeight), radius, radius);
         }
 
         var bitmap = new RenderTargetBitmap(size, size, 96, 96, PixelFormats.Pbgra32);
         bitmap.Render(visual);
-        return CreateIcon(bitmap);
+        return bitmap;
+    }
+
+    static BitmapSource? AppIconFrame(int size)
+    {
+        try
+        {
+            var decoder = BitmapDecoder.Create(new Uri("pack://application:,,,/Assets/podpilot.ico"),
+                BitmapCreateOptions.None, BitmapCacheOption.OnLoad);
+            // The smallest frame that is still at least as big as needed, for a sharp result.
+            return decoder.Frames.Where(f => f.PixelWidth >= size).OrderBy(f => f.PixelWidth).FirstOrDefault()
+                ?? decoder.Frames.OrderByDescending(f => f.PixelWidth).First();
+        }
+        catch (Exception)
+        {
+            return null;
+        }
     }
 
     /// <summary>Turns a WPF bitmap into a Win32 HICON with alpha.</summary>

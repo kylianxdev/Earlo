@@ -60,6 +60,9 @@ public static class PreviewRenderer
         RenderPopup(Path.Combine(folder, "popup-galaxy-buds.png"),
             new DeviceViewState(PodPilot.Core.Samsung.GalaxyBudsManager.ToSnapshot(PodPilot.Core.Samsung.GalaxyBudsModel.Buds2Pro, galaxy),
                 new PairedDeviceInfo("demo", "Galaxy Buds2 Pro (A1B2)", true), ScannerStatus.Scanning, 20, CanConnect: true));
+        foreach (var (percent, charging, light) in new[] { (85, false, false), (40, false, true), (15, false, false), (60, true, false) })
+            SavePng(TrayIcon.RenderBatteryBitmap(percent, charging, light),
+                Path.Combine(folder, $"tray-{percent}{(charging ? "-charging" : "")}{(light ? "-light" : "")}.png"));
         RenderPopup(Path.Combine(folder, "popup-searching.png"),
             new DeviceViewState(null, null, ScannerStatus.Scanning, 20));
     }
@@ -72,6 +75,14 @@ public static class PreviewRenderer
         popup.UpdateLayout();
         Save((FrameworkElement)popup.Content, file);
         popup.Close();
+    }
+
+    static void SavePng(BitmapSource bitmap, string file)
+    {
+        var encoder = new PngBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(bitmap));
+        using var stream = File.Create(file);
+        encoder.Save(stream);
     }
 
     static void Save(FrameworkElement element, string file)

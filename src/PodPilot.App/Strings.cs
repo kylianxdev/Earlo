@@ -65,7 +65,7 @@ public static class Strings
     public static string Settings => T("Settings", "Instellingen");
     public static string General => T("General", "Algemeen");
     public static string StartWithWindows => T("Start PodPilot with Windows", "PodPilot starten met Windows");
-    public static string TrayShowsBattery => T("Show battery level in the tray icon", "Batterijniveau tonen in het systeemvak");
+    public static string TrayShowsBattery => T("Show a battery bar on the tray icon", "Batterijbalkje tonen op het icoon in het systeemvak");
     public static string Popup => T("Popup", "Pop-up");
     public static string PopupOnLidOpen => T("Show popup when the case is opened", "Pop-up tonen als de case opengaat");
     public static string PopupOnConnect => T("Show popup when headphones connect", "Pop-up tonen als de oortjes verbinden");
