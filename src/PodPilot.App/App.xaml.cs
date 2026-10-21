@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Threading;
 using PodPilot.App.Controls;
 using PodPilot.App.Services;
+using PodPilot.Core.Aap;
 using PodPilot.Core.Bluetooth;
 using PodPilot.Core.Media;
 using PodPilot.Core.Tracking;
@@ -20,6 +21,7 @@ public partial class App : Application
     readonly AdvertisementScanner _scanner = new();
     readonly PairedDeviceMonitor _paired = new();
     readonly MediaController _media = new();
+    readonly AapDeviceManager _aap = new();
 
     Mutex? _instanceMutex;
     EventWaitHandle? _activateEvent;
@@ -89,6 +91,8 @@ public partial class App : Application
         _paired.DevicesChanged += (_, _) => Dispatcher.BeginInvoke(Refresh);
 
         _paired.Start();
+        _aap.Changed += (_, _) => Dispatcher.BeginInvoke(Refresh);
+        _aap.Start();
         _ = _scanner.EnsureRunningAsync();
 
         _tick = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
@@ -115,7 +119,7 @@ public partial class App : Application
     }
 
     DeviceViewState CurrentState() =>
-        new(_tracker.Current, _paired.ConnectedDevice, _scanner.Status, _settings.LowBatteryThreshold);
+        new(_tracker.Current, _paired.ConnectedDevice, _scanner.Status, _settings.LowBatteryThreshold, _aap.Current?.State);
 
     void OnUpdated(PodsSnapshot snapshot)
     {
@@ -129,8 +133,26 @@ public partial class App : Application
         Refresh();
     }
 
+    void SetNoiseControl(NoiseControlMode mode) => _ = SendAap(s => s.SetNoiseControlAsync(mode));
+
+    async System.Threading.Tasks.Task SendAap(Func<AapSession, System.Threading.Tasks.Task> action)
+    {
+        if (_aap.Current is not { } session)
+            return;
+        try
+        {
+            await action(session);
+        }
+        catch (Exception)
+        {
+            // The channel dropped; the manager reconnects and the UI refreshes on its own.
+        }
+    }
+
     void OnPairedConnectionChanged(PairedDeviceInfo device)
     {
+        if (device.IsConnected)
+            _aap.RetryAll();
         Refresh();
         if (!device.IsConnected || !_settings.PopupOnConnect)
             return;
@@ -162,7 +184,7 @@ public partial class App : Application
         _tray?.Update(state.Snapshot, state.Connected?.Name, _settings.TrayShowsBattery);
         if (_popup is { IsVisible: true })
             _popup.Update(state);
-        _settingsWindow?.Update(state, _paired.Devices);
+        _settingsWindow?.Update(state, _paired.Devices, _aap.DriverPresent);
     }
 
     void ShowPopup()
@@ -171,6 +193,7 @@ public partial class App : Application
         {
             _popup = new PopupWindow();
             _popup.SettingsRequested += (_, _) => ShowSettings();
+            _popup.NoiseControlRequested += (_, mode) => SetNoiseControl(mode);
         }
         _popup.Duration = TimeSpan.FromSeconds(_settings.PopupSeconds);
         _popup.ShowAnimated(CurrentState());
@@ -190,8 +213,11 @@ public partial class App : Application
         {
             _settingsWindow = new SettingsWindow(_settings);
             _settingsWindow.ShowPopupRequested += (_, _) => ShowPopup();
+            _settingsWindow.NoiseControlRequested += (_, mode) => SetNoiseControl(mode);
+            _settingsWindow.ConversationAwarenessRequested += (_, on) => _ = SendAap(s => s.SetConversationAwarenessAsync(on));
+            _settingsWindow.AdaptiveStrengthRequested += (_, level) => _ = SendAap(s => s.SetAdaptiveStrengthAsync(level));
             _settingsWindow.Closed += (_, _) => _settingsWindow = null;
-            _settingsWindow.Update(CurrentState(), _paired.Devices);
+            _settingsWindow.Update(CurrentState(), _paired.Devices, _aap.DriverPresent);
             _settingsWindow.Show();
         }
 
@@ -205,6 +231,7 @@ public partial class App : Application
         _tick?.Stop();
         _tray?.Dispose();
         _scanner.Dispose();
+        _aap.Dispose();
         _paired.Dispose();
         _activateEvent?.Dispose();
         _instanceMutex?.Dispose();

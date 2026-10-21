@@ -4,6 +4,7 @@ using System.Windows.Input;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using PodPilot.App.Controls;
+using PodPilot.Core.Aap;
 
 namespace PodPilot.App;
 
@@ -17,9 +18,15 @@ public partial class PopupWindow : Window
     {
         InitializeComponent();
         _hideTimer.Tick += (_, _) => SlideOut();
+        Panel.NoiseControlRequested += (_, mode) =>
+        {
+            RestartHideTimer();
+            NoiseControlRequested?.Invoke(this, mode);
+        };
     }
 
     public event EventHandler? SettingsRequested;
+    public event EventHandler<NoiseControlMode>? NoiseControlRequested;
 
     public TimeSpan Duration { get; set; } = TimeSpan.FromSeconds(8);
 

@@ -54,6 +54,19 @@
                 <CheckBox Content="Only when the AirPods are connected to this PC" Margin="28,4,0,0" IsChecked="{Binding RequireConnected}" IsEnabled="{Binding EarDetection}" />
                 <TextBlock Style="{StaticResource Hint}" Text="Works with Spotify, browsers, Media Player and every app that shows up in the Windows media controls." />
 
+                <TextBlock Text="Noise control" Style="{StaticResource SectionHeader}" />
+                <TextBlock x:Name="AapStatusText" TextWrapping="Wrap" Opacity="0.8" />
+                <StackPanel x:Name="AapControls" Margin="0,8,0,0" Visibility="Collapsed">
+                    <CheckBox x:Name="ConversationToggle" Content="Conversation Awareness (lower volume when you speak)" Click="OnConversationClick" />
+                    <DockPanel x:Name="AdaptivePanel" Margin="0,8,0,0">
+                        <TextBlock DockPanel.Dock="Right" Width="40" TextAlignment="Right" VerticalAlignment="Center" Text="{Binding Value, ElementName=AdaptiveSlider, StringFormat={}{0:0}}" />
+                        <TextBlock Text="Adaptive strength" VerticalAlignment="Center" Width="130" />
+                        <Slider x:Name="AdaptiveSlider" Minimum="0" Maximum="100" TickFrequency="5" IsSnapToTickEnabled="True" VerticalAlignment="Center"
+                                Thumb.DragCompleted="OnAdaptiveDragCompleted" />
+                    </DockPanel>
+                    <TextBlock Style="{StaticResource Hint}" Margin="0,4,0,0" Text="Lower lets in more ambient sound, higher filters more noise. Only applies in Adaptive mode." />
+                </StackPanel>
+
                 <TextBlock Text="Notifications" Style="{StaticResource SectionHeader}" />
                 <CheckBox Content="Warn when the battery is low" IsChecked="{Binding LowBatteryWarning}" />
                 <DockPanel Margin="28,8,0,0" IsEnabled="{Binding LowBatteryWarning}">

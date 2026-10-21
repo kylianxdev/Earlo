@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  app:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -33,12 +33,56 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: PodPilot
+          name: app
           path: PodPilot-*.zip
 
-      - name: Release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
+  driver:
+    runs-on: windows-2022
+    strategy:
+      matrix:
+        platform: [x64, ARM64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: microsoft/setup-msbuild@v2
+
+      - name: Build driver
+        run: msbuild driver/PodPilotAap/PodPilotAap.vcxproj -p:Configuration=Release -p:Platform=${{ matrix.platform }} -m
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $platform = '${{ matrix.platform }}'
+          $out = "staging"
+          New-Item -ItemType Directory -Force $out | Out-Null
+          $files = Get-ChildItem driver/PodPilotAap -Recurse -Include PodPilotAap.sys, PodPilotAap.inf, podpilotaap.cat, *.cer |
+            Where-Object { $_.FullName -match "\\$platform\\Release\\" }
+          $files | ForEach-Object { Write-Host $_.FullName }
+          foreach ($name in 'PodPilotAap.sys', 'PodPilotAap.inf', 'PodPilotAap.cat') {
+            $file = $files | Where-Object Name -eq $name | Select-Object -First 1
+            if (-not $file) { throw "$name was not produced" }
+            Copy-Item $file.FullName $out
+          }
+          $files | Where-Object Extension -eq '.cer' | Select-Object -First 1 | Copy-Item -Destination $out
+          Copy-Item driver/install-driver.ps1, driver/uninstall-driver.ps1, driver/README.md $out
+          $arch = $platform.ToLower()
+          Compress-Archive -Path "$out/*" -DestinationPath "PodPilotAap-driver-$arch.zip" -Force
+
+      - uses: actions/upload-artifact@v4
         with:
-          files: PodPilot-*.zip
+          name: driver-${{ matrix.platform }}
+          path: PodPilotAap-driver-*.zip
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [app, driver]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: '*.zip'
           generate_release_notes: true

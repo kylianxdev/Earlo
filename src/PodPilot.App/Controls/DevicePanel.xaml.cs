@@ -1,6 +1,9 @@
+using System;
 using System.Windows;
 using System.Windows.Controls;
+using PodPilot.Core.Aap;
 using PodPilot.Core.Bluetooth;
+using PodPilot.Core.Devices;
 using PodPilot.Core.Tracking;
 
 namespace PodPilot.App.Controls;
@@ -11,8 +14,11 @@ public partial class DevicePanel : UserControl
     public DevicePanel()
     {
         InitializeComponent();
+        NoiseBar.ModeRequested += (_, mode) => NoiseControlRequested?.Invoke(this, mode);
         Update(new DeviceViewState(null, null, ScannerStatus.Starting, 20));
     }
+
+    public event EventHandler<NoiseControlMode>? NoiseControlRequested;
 
     public void Update(DeviceViewState state)
     {
@@ -53,18 +59,29 @@ public partial class DevicePanel : UserControl
 
         LeftBar.Visibility = RightBar.Visibility = CaseBar.Visibility = hasCase ? Visibility.Visible : Visibility.Collapsed;
         SingleBar.Visibility = hasCase ? Visibility.Collapsed : Visibility.Visible;
-        LeftBar.State = snapshot.Left;
-        RightBar.State = snapshot.Right;
-        CaseBar.State = snapshot.Case;
-        SingleBar.State = snapshot.Single;
+        // Exact 1% levels over AAP (driver installed) win over the 10% steps from the advertisement.
+        var aap = state.Aap is { Connected: true } a ? a : null;
+        LeftBar.State = Exact(aap?.Left) ?? snapshot.Left;
+        RightBar.State = Exact(aap?.Right) ?? snapshot.Right;
+        CaseBar.State = Exact(aap?.Case) ?? snapshot.Case;
+        SingleBar.State = Exact(aap?.Single) ?? snapshot.Single;
         LeftBar.Label = snapshot.LeftInEar ? "Left •" : "Left";
         RightBar.Label = snapshot.RightInEar ? "Right •" : "Right";
+
+        bool hasNoiseControl = aap is not null && device.NoiseControl != NoiseControlSupport.None;
+        NoiseBar.Visibility = hasNoiseControl ? Visibility.Visible : Visibility.Collapsed;
+        if (hasNoiseControl)
+            NoiseBar.Update(aap!.NoiseControl, device.NoiseControl == NoiseControlSupport.Adaptive);
 
         bool connected = state.Connected is not null;
         StatusDot.SetResourceReference(System.Windows.Shapes.Shape.FillProperty, connected ? "BatteryGood" : "BatteryUnknown");
         StatusText.Text = (connected ? "Connected to this PC" : "Not connected to this PC")
             + (hasCase && snapshot.AnyInEar ? (snapshot.BothInEar ? " · in both ears" : " · in one ear") : string.Empty);
     }
+
+    static BatteryState? Exact(AapBattery? battery) =>
+        battery is { } b ? new BatteryState(b.Level, b.Status == AapBatteryStatus.Charging) : null;
 }
 
-public sealed record DeviceViewState(PodsSnapshot? Snapshot, PairedDeviceInfo? Connected, ScannerStatus ScannerStatus, int LowThreshold);
+public sealed record DeviceViewState(
+    PodsSnapshot? Snapshot, PairedDeviceInfo? Connected, ScannerStatus ScannerStatus, int LowThreshold, AapState? Aap = null);

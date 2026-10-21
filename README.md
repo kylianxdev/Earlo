@@ -71,10 +71,25 @@ Because the levels come in 10% steps (for example "80 to 89%"), PodPilot shows t
 | Bluetooth LE scanning | [`AdvertisementScanner.cs`](src/PodPilot.Core/Bluetooth/AdvertisementScanner.cs) |
 | Media pause/resume | [`MediaController.cs`](src/PodPilot.Core/Media/MediaController.cs) |
 
-### Limitations
+### Noise control (experimental)
 
-Switching noise control (ANC, Transparency, Adaptive), Conversation Awareness and 1% battery precision need Apple's AAP protocol over a Bluetooth L2CAP channel.
-Windows does not let normal apps open L2CAP channels, so this needs a kernel driver. That is on the roadmap but not in this version.
+Switching noise control (Off, Noise Cancellation, Transparency, Adaptive), Conversation Awareness, Adaptive strength
+and exact 1% battery levels need Apple's AAP protocol over a Bluetooth L2CAP channel (PSM `0x1001`).
+Windows does not let normal apps open L2CAP channels, so PodPilot ships an open-source kernel driver for it: see [`driver/`](driver/README.md).
+
+<p align="center">
+  <img src="docs/screenshots/popup-noise-control.png" width="380" alt="Popup with noise control buttons">
+</p>
+
+The driver is **experimental and not yet verified on real AirPods**. Until it is signed through Microsoft,
+it only loads with Windows test signing enabled. Without the driver, everything else in PodPilot works as usual.
+
+| Part | File |
+| --- | --- |
+| AAP packets and parsing | [`AapPacket.cs`](src/PodPilot.Core/Aap/AapPacket.cs), [`AapMessage.cs`](src/PodPilot.Core/Aap/AapMessage.cs) |
+| Session (handshake, state, commands) | [`AapSession.cs`](src/PodPilot.Core/Aap/AapSession.cs) |
+| Driver client | [`DriverAapTransport.cs`](src/PodPilot.Core/Aap/DriverAapTransport.cs) |
+| Kernel driver (KMDF) | [`driver/PodPilotAap`](driver/PodPilotAap) |
 
 ## Command-line options
 
@@ -104,8 +119,9 @@ dotnet publish src/PodPilot.App -c Release -r win-x64 --self-contained -p:Publis
 
 ## Roadmap
 
-- [ ] Noise control and Conversation Awareness (needs an L2CAP driver)
-- [ ] Exact 1% battery levels
+- [x] AAP protocol layer: noise control, Conversation Awareness, exact battery levels
+- [ ] Verify the AAP driver on real hardware
+- [ ] Sign the driver through Microsoft Partner Center, so no test mode is needed
 - [ ] Translations
 - [ ] Installer and winget package
 
@@ -113,6 +129,7 @@ Contributions are welcome. Please open an issue first for larger changes.
 
 ## Credits
 
+The AAP byte formats come from the public protocol notes of [LibrePods](https://github.com/kavishdevar/librepods) (no code was copied).
 The message format is documented by the reverse-engineering work of the community, including
 [OpenPods](https://github.com/adolfintel/OpenPods), [AirPodsDesktop](https://github.com/SpriteOvO/AirPodsDesktop),
 [LibrePods](https://github.com/kavishdevar/librepods) and [furiousMAC/continuity](https://github.com/furiousMAC/continuity).

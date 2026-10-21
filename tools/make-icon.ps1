@@ -1,4 +1,5 @@
 # Generates src/PodPilot.App/Assets/podpilot.ico (and a 256px PNG for the README).
+# Uses tools/icon-source.png when present, otherwise draws a simple vector icon.
 # Run from the repository root: powershell -ExecutionPolicy Bypass -File tools/make-icon.ps1
 Add-Type -AssemblyName System.Drawing
 
@@ -13,7 +14,25 @@ function New-RoundedRect([float]$x, [float]$y, [float]$w, [float]$h, [float]$r) 
     return $p
 }
 
+$source = Join-Path $PSScriptRoot 'icon-source.png'
+$sourceImage = if (Test-Path $source) { [System.Drawing.Image]::FromFile($source) } else { $null }
+
 function New-IconBitmap([int]$size) {
+    if ($sourceImage) {
+        # Downscale the rendered icon (tools/icon-source.png, transparent background).
+        $bmp = New-Object System.Drawing.Bitmap $size, $size
+        $g = [System.Drawing.Graphics]::FromImage($bmp)
+        $g.InterpolationMode = 'HighQualityBicubic'
+        $g.PixelOffsetMode = 'HighQuality'
+        $g.SmoothingMode = 'AntiAlias'
+        $g.DrawImage($sourceImage, 0, 0, $size, $size)
+        $g.Dispose()
+        return $bmp
+    }
+    return New-VectorIconBitmap $size
+}
+
+function New-VectorIconBitmap([int]$size) {
     $bmp = New-Object System.Drawing.Bitmap $size, $size
     $g = [System.Drawing.Graphics]::FromImage($bmp)
     $g.SmoothingMode = 'AntiAlias'
@@ -47,13 +66,40 @@ $assets = Join-Path $root 'src/PodPilot.App/Assets'
 New-Item -ItemType Directory -Force $assets | Out-Null
 
 $sizes = 16, 20, 24, 32, 40, 48, 64, 128, 256
+# 256px is stored as PNG; smaller sizes as 32-bit DIBs, because GDI+ (tray icons) cannot
+# decode PNG entries at small sizes.
+function Get-DibBytes([System.Drawing.Bitmap]$bmp) {
+    $size = $bmp.Width
+    $ms = New-Object System.IO.MemoryStream
+    $w = New-Object System.IO.BinaryWriter $ms
+    # BITMAPINFOHEADER; height is doubled to include the AND mask
+    $w.Write([uint32]40); $w.Write([int32]$size); $w.Write([int32]($size * 2))
+    $w.Write([uint16]1); $w.Write([uint16]32); $w.Write([uint32]0)
+    $w.Write([uint32]0); $w.Write([int32]0); $w.Write([int32]0); $w.Write([uint32]0); $w.Write([uint32]0)
+    for ($y = $size - 1; $y -ge 0; $y--) {
+        for ($x = 0; $x -lt $size; $x++) {
+            $c = $bmp.GetPixel($x, $y)
+            $w.Write([byte]$c.B); $w.Write([byte]$c.G); $w.Write([byte]$c.R); $w.Write([byte]$c.A)
+        }
+    }
+    $maskStride = [int]([Math]::Ceiling($size / 32.0) * 4)
+    $w.Write((New-Object byte[] ($maskStride * $size)))
+    $w.Flush()
+    return , $ms.ToArray()
+}
+
 $pngs = foreach ($size in $sizes) {
     $bmp = New-IconBitmap $size
-    $ms = New-Object System.IO.MemoryStream
-    $bmp.Save($ms, [System.Drawing.Imaging.ImageFormat]::Png)
-    if ($size -eq 256) { $bmp.Save((Join-Path $root 'docs/icon.png'), [System.Drawing.Imaging.ImageFormat]::Png) }
+    if ($size -eq 256) {
+        $ms = New-Object System.IO.MemoryStream
+        $bmp.Save($ms, [System.Drawing.Imaging.ImageFormat]::Png)
+        $bmp.Save((Join-Path $root 'docs/icon.png'), [System.Drawing.Imaging.ImageFormat]::Png)
+        $bytes = $ms.ToArray()
+    } else {
+        $bytes = Get-DibBytes $bmp
+    }
     $bmp.Dispose()
-    , $ms.ToArray()
+    , $bytes
 }
 
 $out = New-Object System.IO.MemoryStream

@@ -16,7 +16,22 @@ public enum FormFactor
     Neckband,
 }
 
-public sealed record DeviceInfo(ushort ModelId, string Name, FormFactor FormFactor, bool IsBeats = false, bool IsKnown = true)
+public enum NoiseControlSupport
+{
+    None,
+    /// <summary>Off, noise cancellation and transparency.</summary>
+    Basic,
+    /// <summary>Basic plus Adaptive mode and Conversation Awareness.</summary>
+    Adaptive,
+}
+
+public sealed record DeviceInfo(
+    ushort ModelId,
+    string Name,
+    FormFactor FormFactor,
+    bool IsBeats = false,
+    bool IsKnown = true,
+    NoiseControlSupport NoiseControl = NoiseControlSupport.None)
 {
     /// <summary>Single-battery products report one level instead of left/right/case.</summary>
     public bool HasSingleBattery => FormFactor is FormFactor.Headphones or FormFactor.Neckband;

@@ -1,0 +1,52 @@
+# PodPilot AAP bridge driver
+
+Windows does not let normal apps open Bluetooth L2CAP channels. AirPods use one (PSM `0x1001`)
+for Apple's accessory protocol (AAP): noise control, Conversation Awareness, exact battery levels and more.
+
+This KMDF driver loads on the AirPods' vendor Bluetooth service
+`{4715650b-5e9d-4ac2-b898-a4fc0aa5df78}`, opens that channel and passes raw packets to PodPilot.
+All protocol logic lives in the app ([`src/PodPilot.Core/Aap`](../src/PodPilot.Core/Aap)).
+
+> **Status: experimental, not yet verified on hardware.** It builds in CI, but no one has confirmed it on real AirPods yet.
+> Please report results in an issue, together with a `--log` file.
+
+## Interface
+
+One device interface (`{1e9fa4ac-dd4c-4d83-a2a0-a5767809ccba}`) exists per paired AirPods.
+See [`PodPilotAap/Public.h`](PodPilotAap/Public.h).
+
+| IOCTL | What it does |
+| --- | --- |
+| `GET_INFO` | Driver version, channel state, Bluetooth address |
+| `CONNECT` | Opens L2CAP PSM 0x1001 to the AirPods |
+| `DISCONNECT` | Closes the channel |
+| `SEND` | Sends one AAP packet |
+| `RECEIVE` | Waits for the next packet from the AirPods |
+
+## Installing a test build
+
+The driver is test-signed until it is signed through Microsoft Partner Center.
+Test-signed drivers only load with Windows test signing enabled, which lowers security
+(it can conflict with Secure Boot and game anti-cheat).
+
+1. Pair your AirPods with Windows.
+2. In an administrator terminal: `bcdedit /set testsigning on`, then restart.
+3. Download `PodPilotAap-driver-x64.zip` from the GitHub Actions artifacts or a release, and unzip it.
+4. In an administrator PowerShell in that folder: `powershell -ExecutionPolicy Bypass -File install-driver.ps1`.
+5. Start PodPilot. Noise control buttons appear when the channel is open.
+
+To remove it, run `uninstall-driver.ps1`, then `bcdedit /set testsigning off` and restart.
+
+## Building
+
+You need Visual Studio 2022 with the Windows Driver Kit (WDK).
+
+```bash
+msbuild driver/PodPilotAap/PodPilotAap.vcxproj -p:Configuration=Release -p:Platform=x64
+```
+
+## Hardware IDs
+
+The INF matches the AAP service in general, plus one hardware ID per known model
+(`BTHENUM\{4715650b-...}_VID&0001004c_PID&<model>`). If your AirPods are not picked up, look up the
+hardware IDs in Device Manager (Bluetooth > the device > Details > Hardware Ids) and open an issue.

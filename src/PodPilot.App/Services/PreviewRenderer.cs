@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using PodPilot.App.Controls;
+using PodPilot.Core.Aap;
 using PodPilot.Core.Bluetooth;
 
 namespace PodPilot.App.Services;
@@ -20,6 +21,16 @@ public static class PreviewRenderer
 
         RenderPopup(Path.Combine(folder, "popup-airpods-pro.png"),
             new DeviceViewState(DemoMode.Snapshot(), connected, ScannerStatus.Scanning, 20));
+        var aap = new AapState
+        {
+            Connected = true,
+            NoiseControl = NoiseControlMode.Adaptive,
+            Left = new AapBattery(AapBatteryComponent.Left, 87, AapBatteryStatus.Discharging),
+            Right = new AapBattery(AapBatteryComponent.Right, 79, AapBatteryStatus.Discharging),
+            Case = new AapBattery(AapBatteryComponent.Case, 54, AapBatteryStatus.Charging),
+        };
+        RenderPopup(Path.Combine(folder, "popup-noise-control.png"),
+            new DeviceViewState(DemoMode.Snapshot(), connected, ScannerStatus.Scanning, 20, aap));
         RenderPopup(Path.Combine(folder, "popup-airpods-4.png"),
             new DeviceViewState(DemoMode.Snapshot(0x1920, 100, 90, 15, false), null, ScannerStatus.Scanning, 20));
         RenderPopup(Path.Combine(folder, "popup-airpods-max.png"),
