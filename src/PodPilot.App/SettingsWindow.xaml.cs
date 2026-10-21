@@ -51,6 +51,7 @@ public partial class SettingsWindow : Window
         };
 
         AapControls.Visibility = aap is not null && support == NoiseControlSupport.Adaptive ? Visibility.Visible : Visibility.Collapsed;
+        VolumeSwipeCheck.Visibility = aap is not null && support == NoiseControlSupport.Adaptive ? Visibility.Visible : Visibility.Collapsed;
         if (aap is not null)
         {
             ConversationToggle.IsChecked = aap.ConversationAwareness ?? false;
@@ -86,6 +87,11 @@ public partial class SettingsWindow : Window
     }
 
     void OnDriverClick(object sender, RoutedEventArgs e) => DriverButtonClicked?.Invoke(this, EventArgs.Empty);
+
+    public event EventHandler<bool>? VolumeSwipeRequested;
+
+    void OnVolumeSwipeClick(object sender, RoutedEventArgs e) =>
+        VolumeSwipeRequested?.Invoke(this, VolumeSwipeCheck.IsChecked == true);
 
     void OnConversationClick(object sender, RoutedEventArgs e) =>
         ConversationAwarenessRequested?.Invoke(this, ConversationToggle.IsChecked == true);

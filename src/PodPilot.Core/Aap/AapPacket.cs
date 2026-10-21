@@ -28,6 +28,8 @@ public static class AapControl
     public const byte ListeningMode = 0x0D;
     public const byte ListeningModeConfigs = 0x1A;
     public const byte OneBudAnc = 0x1B;
+    public const byte VolumeSwipeInterval = 0x23;
+    public const byte VolumeSwipe = 0x25;
     public const byte ConversationDetect = 0x28;
     public const byte AdaptiveStrength = 0x2E;
 }
@@ -56,6 +58,12 @@ public static class AapPacket
     public static byte[] SetNoiseControl(NoiseControlMode mode) => Control(AapControl.ListeningMode, (byte)mode);
 
     public static byte[] SetConversationAwareness(bool enabled) => Control(AapControl.ConversationDetect, enabled ? (byte)0x01 : (byte)0x02);
+
+    /// <summary>
+    /// Swipe up/down on the stem to change the volume (AirPods Pro 2 and later). Apple devices switch this on
+    /// over AAP; without it the AirPods ignore swipes on other hosts.
+    /// </summary>
+    public static byte[] SetVolumeSwipe(bool enabled) => Control(AapControl.VolumeSwipe, enabled ? (byte)0x01 : (byte)0x02);
 
     /// <summary>How strongly Adaptive mode filters noise, 0 (most ambient sound) to 100.</summary>
     public static byte[] SetAdaptiveStrength(int level) => Control(AapControl.AdaptiveStrength, (byte)Math.Clamp(level, 0, 100));

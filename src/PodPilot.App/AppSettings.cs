@@ -26,6 +26,7 @@ public sealed class AppSettings : INotifyPropertyChanged
     bool _trayShowsBattery = true;
     int _rssiThreshold = -70;
     bool _requireConnected = true;
+    bool _volumeSwipe = true;
     bool _firstRunDone;
     bool _autoUpdate = true;
 
@@ -46,6 +47,9 @@ public sealed class AppSettings : INotifyPropertyChanged
 
     /// <summary>Only pause/resume media when AirPods are connected to this PC.</summary>
     public bool RequireConnected { get => _requireConnected; set => Set(ref _requireConnected, value); }
+
+    /// <summary>Turn on swipe-to-change-volume on the AirPods stem (needs the AAP driver).</summary>
+    public bool VolumeSwipe { get => _volumeSwipe; set => Set(ref _volumeSwipe, value); }
 
     public bool FirstRunDone { get => _firstRunDone; set => Set(ref _firstRunDone, value); }
 

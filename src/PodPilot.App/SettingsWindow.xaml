@@ -60,6 +60,8 @@
                     <Button x:Name="DriverButton" HorizontalAlignment="Left" Click="OnDriverClick" />
                     <TextBlock x:Name="DriverNote" Style="{StaticResource Hint}" Margin="0,6,0,0" />
                 </StackPanel>
+                <CheckBox x:Name="VolumeSwipeCheck" Margin="0,8,0,0" Visibility="Collapsed"
+                          Content="Swipe up or down on the stem to change the volume" IsChecked="{Binding VolumeSwipe}" Click="OnVolumeSwipeClick" />
                 <StackPanel x:Name="AapControls" Margin="0,8,0,0" Visibility="Collapsed">
                     <CheckBox x:Name="ConversationToggle" Content="Conversation Awareness (lower volume when you speak)" Click="OnConversationClick" />
                     <DockPanel x:Name="AdaptivePanel" Margin="0,8,0,0">

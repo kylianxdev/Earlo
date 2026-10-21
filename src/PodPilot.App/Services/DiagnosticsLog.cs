@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using PodPilot.Core.Aap;
 using PodPilot.Core.Bluetooth;
 using PodPilot.Core.Devices;
 
@@ -13,9 +14,11 @@ public static class DiagnosticsLog
 {
     static readonly object Gate = new();
 
-    public static void Attach(AdvertisementScanner scanner, string file)
+    public static void Attach(AdvertisementScanner scanner, AapDeviceManager aap, string file)
     {
         Write(file, $"PodPilot diagnostics started {DateTimeOffset.Now:O}");
+        aap.PacketTraced += (incoming, packet) =>
+            Write(file, $"{DateTimeOffset.Now:HH:mm:ss.fff} aap {(incoming ? "<-" : "->")} {Convert.ToHexString(packet.Span)}");
         scanner.StatusChanged += (_, status) => Write(file, $"scanner: {status}");
         scanner.Received += (_, a) =>
         {

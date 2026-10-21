@@ -7,6 +7,7 @@ public sealed record AapState
     public NoiseControlMode? NoiseControl { get; init; }
     public bool? ConversationAwareness { get; init; }
     public int? AdaptiveStrength { get; init; }
+    public bool? VolumeSwipe { get; init; }
     public AapBattery? Left { get; init; }
     public AapBattery? Right { get; init; }
     public AapBattery? Case { get; init; }
@@ -45,9 +46,9 @@ public sealed class AapSession : IDisposable
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
         await _transport.OpenAsync(cancellationToken).ConfigureAwait(false);
-        await _transport.SendAsync(AapPacket.Handshake, cancellationToken).ConfigureAwait(false);
-        await _transport.SendAsync(AapPacket.HostCapabilities(), cancellationToken).ConfigureAwait(false);
-        await _transport.SendAsync(AapPacket.RequestNotifications(), cancellationToken).ConfigureAwait(false);
+        await Send(AapPacket.Handshake, cancellationToken).ConfigureAwait(false);
+        await Send(AapPacket.HostCapabilities(), cancellationToken).ConfigureAwait(false);
+        await Send(AapPacket.RequestNotifications(), cancellationToken).ConfigureAwait(false);
         Update(s => s with { Connected = true });
     }
 
@@ -55,23 +56,39 @@ public sealed class AapSession : IDisposable
     {
         // Show the new mode right away; the AirPods confirm with the same packet.
         Update(s => s with { NoiseControl = mode });
-        return _transport.SendAsync(AapPacket.SetNoiseControl(mode), cancellationToken);
+        return Send(AapPacket.SetNoiseControl(mode), cancellationToken);
     }
 
     public Task SetConversationAwarenessAsync(bool enabled, CancellationToken cancellationToken = default)
     {
         Update(s => s with { ConversationAwareness = enabled });
-        return _transport.SendAsync(AapPacket.SetConversationAwareness(enabled), cancellationToken);
+        return Send(AapPacket.SetConversationAwareness(enabled), cancellationToken);
     }
 
     public Task SetAdaptiveStrengthAsync(int level, CancellationToken cancellationToken = default)
     {
         Update(s => s with { AdaptiveStrength = Math.Clamp(level, 0, 100) });
-        return _transport.SendAsync(AapPacket.SetAdaptiveStrength(level), cancellationToken);
+        return Send(AapPacket.SetAdaptiveStrength(level), cancellationToken);
+    }
+
+    public Task SetVolumeSwipeAsync(bool enabled, CancellationToken cancellationToken = default)
+    {
+        Update(s => s with { VolumeSwipe = enabled });
+        return Send(AapPacket.SetVolumeSwipe(enabled), cancellationToken);
+    }
+
+    /// <summary>Raised for every packet sent (incoming false) or received (true), for diagnostics.</summary>
+    public event Action<bool, ReadOnlyMemory<byte>>? PacketTraced;
+
+    Task Send(byte[] packet, CancellationToken cancellationToken)
+    {
+        PacketTraced?.Invoke(false, packet);
+        return _transport.SendAsync(packet, cancellationToken);
     }
 
     void OnPacket(object? sender, ReadOnlyMemory<byte> packet)
     {
+        PacketTraced?.Invoke(true, packet);
         switch (AapMessage.Parse(packet.Span))
         {
             case AapBatteryMessage battery:
@@ -85,6 +102,9 @@ public sealed class AapSession : IDisposable
                 break;
             case AapControlMessage { Identifier: AapControl.ConversationDetect } control:
                 Update(s => s with { ConversationAwareness = control.Value1 == 0x01 });
+                break;
+            case AapControlMessage { Identifier: AapControl.VolumeSwipe } control:
+                Update(s => s with { VolumeSwipe = control.Value1 == 0x01 });
                 break;
             case AapControlMessage { Identifier: AapControl.AdaptiveStrength } control:
                 Update(s => s with { AdaptiveStrength = control.Value1 });

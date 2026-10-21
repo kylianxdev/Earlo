@@ -30,6 +30,12 @@ public sealed class AapDeviceManager : IDisposable
     /// <summary>Raised on a background thread when a session connects, disconnects or reports new state.</summary>
     public event EventHandler? Changed;
 
+    /// <summary>Raised after the handshake, so the app can apply its settings to the AirPods.</summary>
+    public event EventHandler<AapSession>? SessionStarted;
+
+    /// <summary>Every AAP packet sent (false) or received (true), for diagnostics.</summary>
+    public event Action<bool, ReadOnlyMemory<byte>>? PacketTraced;
+
     public void Start()
     {
         if (_watcher is not null)
@@ -59,10 +65,12 @@ public sealed class AapDeviceManager : IDisposable
         existing?.Dispose();
         var session = new AapSession(new DriverAapTransport(id));
         session.StateChanged += (_, _) => Changed?.Invoke(this, EventArgs.Empty);
+        session.PacketTraced += (incoming, packet) => PacketTraced?.Invoke(incoming, packet);
         try
         {
             await session.StartAsync().ConfigureAwait(false);
             _sessions[id] = session;
+            SessionStarted?.Invoke(this, session);
         }
         catch (Exception)
         {

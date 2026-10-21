@@ -127,6 +127,12 @@ public partial class App : Application
 
         _paired.Start();
         _aap.Changed += (_, _) => Dispatcher.BeginInvoke(Refresh);
+        _aap.SessionStarted += (_, session) =>
+        {
+            // Apple devices switch swipe volume on; without it the AirPods ignore swipes on Windows.
+            if (_settings.VolumeSwipe)
+                _ = session.SetVolumeSwipeAsync(true);
+        };
         _aap.Start();
         _ = _scanner.EnsureRunningAsync();
 
@@ -154,7 +160,7 @@ public partial class App : Application
 
         int logIndex = Array.IndexOf(e.Args, "--log");
         if (logIndex >= 0)
-            DiagnosticsLog.Attach(_scanner, e.Args.ElementAtOrDefault(logIndex + 1) ?? "podpilot-log.txt");
+            DiagnosticsLog.Attach(_scanner, _aap, e.Args.ElementAtOrDefault(logIndex + 1) ?? "podpilot-log.txt");
 
         if (e.Args.Contains("--demo"))
             DemoMode.Start(_tracker, Dispatcher);
@@ -340,6 +346,7 @@ public partial class App : Application
             _settingsWindow.AdaptiveStrengthRequested += (_, level) => _ = SendAap(s => s.SetAdaptiveStrengthAsync(level));
             _settingsWindow.DriverButtonClicked += async (_, _) => await ToggleDriverAsync();
             _settingsWindow.CheckUpdatesRequested += async (_, _) => await CheckForUpdatesAsync(manual: true);
+            _settingsWindow.VolumeSwipeRequested += (_, on) => _ = SendAap(s => s.SetVolumeSwipeAsync(on));
             _ = RefreshDriverStateAsync();
             _settingsWindow.Closed += (_, _) => _settingsWindow = null;
             _settingsWindow.Update(CurrentState(), _paired.Devices, _aap.DriverPresent);
