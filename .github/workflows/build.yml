@@ -11,6 +11,7 @@ permissions:
 
 jobs:
   app:
+    needs: driver
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,26 +23,67 @@ jobs:
       - name: Test
         run: dotnet test tests/PodPilot.Core.Tests -c Release
 
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: driver-*
+          path: drivers
+          merge-multiple: true
+
+      # The GitHub builds embed the driver so PodPilot can install it itself.
+      # A Microsoft-signed package in driver/signed/<arch> wins over the CI test-signed build.
+      - name: Embed driver package
+        shell: pwsh
+        run: |
+          foreach ($arch in 'x64', 'arm64') {
+            $target = "src/PodPilot.App/DriverPackage/$arch"
+            New-Item -ItemType Directory -Force $target | Out-Null
+            if (Test-Path "driver/signed/$arch/PodPilotAap.sys") {
+              Copy-Item "driver/signed/$arch/*" $target
+              Set-Content "$target/signing.txt" 'microsoft'
+            } else {
+              Expand-Archive "drivers/PodPilotAap-driver-$arch.zip" "drivers/$arch" -Force
+              Copy-Item "drivers/$arch/PodPilotAap.sys", "drivers/$arch/PodPilotAap.inf", "drivers/$arch/podpilotaap.cat", "drivers/$arch/PodPilotAap.cer" $target
+              Set-Content "$target/signing.txt" 'test'
+            }
+            Get-ChildItem $target | ForEach-Object { "$arch/$($_.Name)" }
+          }
+
       - name: Publish
         shell: pwsh
         run: |
           foreach ($rid in 'win-x64', 'win-arm64') {
             # Standalone: runs anywhere, trimmed and compressed (see PodPilot.App.csproj).
-            dotnet publish src/PodPilot.App -c Release -r $rid --self-contained `
+            dotnet publish src/PodPilot.App -c Release -r $rid --self-contained -p:PodPilotFlavor=standalone `
               -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o "publish/$rid"
             Compress-Archive -Path "publish/$rid/PodPilot.exe" -DestinationPath "PodPilot-$rid.zip" -Force
 
             # Small: needs the .NET 10 Desktop Runtime installed.
-            dotnet publish src/PodPilot.App -c Release -r $rid --self-contained false `
+            dotnet publish src/PodPilot.App -c Release -r $rid --self-contained false -p:PodPilotFlavor=small `
               -p:PublishSingleFile=true -o "publish/$rid-small"
             Compress-Archive -Path "publish/$rid-small/PodPilot.exe" -DestinationPath "PodPilot-$rid-small.zip" -Force
+
+            # Microsoft Store: no driver, no self-update.
+            $arch = $rid -replace 'win-', ''
+            dotnet publish src/PodPilot.App -c Release -r $rid --self-contained -p:PodPilotFlavor=store `
+              -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o "publish/store-$arch"
           }
           Get-ChildItem PodPilot-*.zip | ForEach-Object { "{0}: {1:N1} MB" -f $_.Name, ($_.Length / 1MB) }
+
+      - name: Store package
+        shell: pwsh
+        run: |
+          $version = ([xml](Get-Content src/PodPilot.App/PodPilot.App.csproj)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
+          ./tools/make-msix.ps1 -Version $version
 
       - uses: actions/upload-artifact@v4
         with:
           name: app
           path: PodPilot-*.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: store
+          path: PodPilot-store.msixbundle
 
   driver:
     runs-on: windows-2022
@@ -92,6 +134,7 @@ jobs:
         with:
           merge-multiple: true
 
+      # Only the zips go on GitHub; the Store bundle is uploaded to Partner Center.
       - uses: softprops/action-gh-release@v2
         with:
           files: '*.zip'

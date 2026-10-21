@@ -34,6 +34,10 @@ public partial class App : Application
     SettingsWindow? _settingsWindow;
     DispatcherTimer? _tick;
     DateTime _connectPopupUntil;
+    DispatcherTimer? _updateTimer;
+    bool _updating;
+    bool _driverInstalled;
+    bool _driverBusy;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -44,6 +48,13 @@ public partial class App : Application
             CrashLog.Write(ex.Exception);
             ex.Handled = true;
         };
+
+        // Elevated helper started by DriverInstaller: do the job and exit, no tray app.
+        if (DriverInstaller.IsElevatedCommand(e.Args.FirstOrDefault()))
+        {
+            Shutdown(DriverInstaller.RunElevatedCommand(e.Args[0]));
+            return;
+        }
 
         int previewIndex = Array.IndexOf(e.Args, "--render-preview");
         if (previewIndex >= 0)
@@ -61,7 +72,18 @@ public partial class App : Application
             return;
         }
 
-        _instanceMutex = new Mutex(true, InstanceName, out bool firstInstance);
+        // After an update the old version is still closing, so wait for it to let go.
+        bool updated = e.Args.Contains(Updater.UpdatedArgument);
+        _instanceMutex = new Mutex(false, InstanceName);
+        bool firstInstance;
+        try
+        {
+            firstInstance = _instanceMutex.WaitOne(updated ? TimeSpan.FromSeconds(15) : TimeSpan.Zero);
+        }
+        catch (AbandonedMutexException)
+        {
+            firstInstance = true;
+        }
         if (!firstInstance)
         {
             // Already running: ask the running instance to show its window.
@@ -75,7 +97,7 @@ public partial class App : Application
 
         _settings = AppSettings.Load();
         Theme.Initialize(this);
-        AutoStart.Apply(_settings.StartWithWindows);
+        _ = AutoStart.ApplyAsync(_settings.StartWithWindows);
 
         _tray = new TrayIcon(_settings);
         _tray.ShowPopup += (_, _) => TogglePopup();
@@ -116,6 +138,20 @@ public partial class App : Application
         };
         _tick.Start();
 
+        Updater.CleanUp();
+        if (updated)
+            _tray.Notify("PodPilot updated", $"You now have PodPilot {Updater.CurrentVersion.ToString(3)}.");
+        if (Updater.Supported)
+        {
+            _updateTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
+            _updateTimer.Tick += async (_, _) =>
+            {
+                _updateTimer.Interval = TimeSpan.FromHours(6);
+                await CheckForUpdatesAsync(manual: false);
+            };
+            _updateTimer.Start();
+        }
+
         int logIndex = Array.IndexOf(e.Args, "--log");
         if (logIndex >= 0)
             DiagnosticsLog.Attach(_scanner, e.Args.ElementAtOrDefault(logIndex + 1) ?? "podpilot-log.txt");
@@ -123,7 +159,8 @@ public partial class App : Application
         if (e.Args.Contains("--demo"))
             DemoMode.Start(_tracker, Dispatcher);
 
-        if (!_settings.FirstRunDone || !e.Args.Contains("--minimized"))
+        bool startHidden = e.Args.Contains("--minimized") || PackageInfo.StartedByStartupTask();
+        if (!_settings.FirstRunDone || !startHidden)
         {
             _settings.FirstRunDone = true;
             ShowSettings();
@@ -145,6 +182,77 @@ public partial class App : Application
 
         _lowBattery?.Check(snapshot, _paired.ConnectedDevice?.Name ?? snapshot.Device.Name);
         Refresh();
+    }
+
+    /// <summary>Looks for a newer GitHub release and installs it (automatically, or when asked).</summary>
+    async System.Threading.Tasks.Task CheckForUpdatesAsync(bool manual)
+    {
+        if (!Updater.Supported || _updating)
+            return;
+        _updating = true;
+        _settingsWindow?.SetUpdateStatus("Checking...", busy: true);
+        try
+        {
+            var update = await Updater.CheckAsync();
+            if (update is null)
+            {
+                _settingsWindow?.SetUpdateStatus(manual ? "PodPilot is up to date." : string.Empty);
+                return;
+            }
+
+            if (!manual && !_settings.AutoUpdate)
+            {
+                _settingsWindow?.SetUpdateStatus($"Version {update.Version.ToString(3)} is available.");
+                _tray?.Notify("PodPilot update available", $"Version {update.Version.ToString(3)} is ready. Open Settings to install it.");
+                return;
+            }
+
+            _settingsWindow?.SetUpdateStatus($"Installing {update.Version.ToString(3)}...", busy: true);
+            if (await Updater.InstallAsync(update))
+            {
+                Shutdown(); // the new version is already starting
+                return;
+            }
+            _settingsWindow?.SetUpdateStatus("The update could not be installed. Download it from GitHub.");
+        }
+        catch (Exception ex) when (ex is System.Net.Http.HttpRequestException or System.Threading.Tasks.TaskCanceledException or System.Text.Json.JsonException)
+        {
+            // Offline or GitHub unreachable: try again later.
+            _settingsWindow?.SetUpdateStatus(manual ? "Could not reach GitHub." : string.Empty);
+        }
+        finally
+        {
+            _updating = false;
+        }
+    }
+
+    async System.Threading.Tasks.Task RefreshDriverStateAsync()
+    {
+        _driverInstalled = await System.Threading.Tasks.Task.Run(DriverInstaller.IsInstalled);
+        _settingsWindow?.UpdateDriver(_driverInstalled, DriverInstaller.EmbeddedPackage, _driverBusy);
+    }
+
+    async System.Threading.Tasks.Task ToggleDriverAsync()
+    {
+        if (_driverBusy)
+            return;
+        _driverBusy = true;
+        _settingsWindow?.UpdateDriver(_driverInstalled, DriverInstaller.EmbeddedPackage, busy: true);
+
+        bool removing = _driverInstalled;
+        bool ok = removing ? await DriverInstaller.UninstallAsync() : await DriverInstaller.InstallAsync();
+        _driverBusy = false;
+        await RefreshDriverStateAsync();
+
+        if (ok)
+        {
+            _aap.RetryAll();
+            _tray?.Notify("PodPilot", removing ? "The noise control driver was removed." : "The noise control driver is installed.");
+        }
+        else
+        {
+            _tray?.Notify("PodPilot", removing ? "The driver could not be removed." : "The driver was not installed.");
+        }
     }
 
     void SetNoiseControl(NoiseControlMode mode) => _ = SendAap(s => s.SetNoiseControlAsync(mode));
@@ -183,7 +291,7 @@ public partial class App : Application
         switch (name)
         {
             case nameof(AppSettings.StartWithWindows):
-                AutoStart.Apply(_settings.StartWithWindows);
+                _ = AutoStart.ApplyAsync(_settings.StartWithWindows);
                 break;
             case nameof(AppSettings.RssiThreshold):
                 _tracker.RssiThreshold = _settings.RssiThreshold;
@@ -230,6 +338,9 @@ public partial class App : Application
             _settingsWindow.NoiseControlRequested += (_, mode) => SetNoiseControl(mode);
             _settingsWindow.ConversationAwarenessRequested += (_, on) => _ = SendAap(s => s.SetConversationAwarenessAsync(on));
             _settingsWindow.AdaptiveStrengthRequested += (_, level) => _ = SendAap(s => s.SetAdaptiveStrengthAsync(level));
+            _settingsWindow.DriverButtonClicked += async (_, _) => await ToggleDriverAsync();
+            _settingsWindow.CheckUpdatesRequested += async (_, _) => await CheckForUpdatesAsync(manual: true);
+            _ = RefreshDriverStateAsync();
             _settingsWindow.Closed += (_, _) => _settingsWindow = null;
             _settingsWindow.Update(CurrentState(), _paired.Devices, _aap.DriverPresent);
             _settingsWindow.Show();

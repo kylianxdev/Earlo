@@ -12,7 +12,7 @@
     <RootNamespace>PodPilot.App</RootNamespace>
     <ApplicationIcon>Assets\podpilot.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>0.2.2</Version>
+    <Version>0.3.0</Version>
     <Product>PodPilot</Product>
     <Description>Open-source AirPods and Beats companion for Windows</Description>
     <Copyright>PodPilot contributors</Copyright>
@@ -36,13 +36,39 @@
     <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <DebuggerSupport>false</DebuggerSupport>
-    <EventSourceSupport>false</EventSourceSupport>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
   </PropertyGroup>
+
+  <!-- WPF loads this at shutdown through reflection, so the trimmer cannot see it is used. -->
+  <ItemGroup Condition="'$(SelfContained)' == 'true'">
+    <TrimmerRootAssembly Include="System.Diagnostics.Tracing" />
+  </ItemGroup>
 
   <ItemGroup>
     <Resource Include="Assets\podpilot.ico" />
     <Resource Include="Assets\Devices\*.png" />
+  </ItemGroup>
+
+  <!--
+    The AAP driver package is embedded in the exe so PodPilot can install it itself.
+    CI fills DriverPackage\<arch>\ (PodPilotAap.sys/.inf/.cat, signing.txt and for test builds
+    PodPilotAap.cer), preferring the Microsoft-signed package in driver\signed\<arch>\ when present.
+  -->
+  <PropertyGroup>
+    <DriverArch Condition="'$(RuntimeIdentifier)' == 'win-x64'">x64</DriverArch>
+    <DriverArch Condition="'$(RuntimeIdentifier)' == 'win-arm64'">arm64</DriverArch>
+  </PropertyGroup>
+  <!-- Build flavour (standalone, small, store; dev locally). Decides auto-update and driver handling. -->
+  <PropertyGroup>
+    <PodPilotFlavor Condition="'$(PodPilotFlavor)' == ''">dev</PodPilotFlavor>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyMetadata Include="PodPilotFlavor" Value="$(PodPilotFlavor)" />
+  </ItemGroup>
+
+  <!-- Store builds never carry the driver. -->
+  <ItemGroup Condition="'$(DriverArch)' != '' and '$(PodPilotFlavor)' != 'store'">
+    <EmbeddedResource Include="DriverPackage\$(DriverArch)\*" LogicalName="driver/%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

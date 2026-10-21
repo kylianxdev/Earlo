@@ -56,6 +56,10 @@
 
                 <TextBlock Text="Noise control" Style="{StaticResource SectionHeader}" />
                 <TextBlock x:Name="AapStatusText" TextWrapping="Wrap" Opacity="0.8" />
+                <StackPanel x:Name="DriverPanel" Margin="0,8,0,0" Visibility="Collapsed">
+                    <Button x:Name="DriverButton" HorizontalAlignment="Left" Click="OnDriverClick" />
+                    <TextBlock x:Name="DriverNote" Style="{StaticResource Hint}" Margin="0,6,0,0" />
+                </StackPanel>
                 <StackPanel x:Name="AapControls" Margin="0,8,0,0" Visibility="Collapsed">
                     <CheckBox x:Name="ConversationToggle" Content="Conversation Awareness (lower volume when you speak)" Click="OnConversationClick" />
                     <DockPanel x:Name="AdaptivePanel" Margin="0,8,0,0">
@@ -85,6 +89,13 @@
 
                 <TextBlock Text="About" Style="{StaticResource SectionHeader}" />
                 <TextBlock x:Name="VersionText" Opacity="0.8" />
+                <StackPanel x:Name="UpdatePanel" Margin="0,8,0,0">
+                    <CheckBox x:Name="AutoUpdateCheck" Content="Install updates automatically" IsChecked="{Binding AutoUpdate}" />
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <Button x:Name="CheckUpdatesButton" Content="Check for updates" Click="OnCheckUpdatesClick" />
+                        <TextBlock x:Name="UpdateStatusText" Margin="12,0,0,0" VerticalAlignment="Center" Opacity="0.8" TextWrapping="Wrap" />
+                    </StackPanel>
+                </StackPanel>
                 <TextBlock Margin="0,4,0,0">
                     <Hyperlink NavigateUri="https://github.com/kylianxdev/PodPilot" RequestNavigate="OnLinkNavigate">github.com/kylianxdev/PodPilot</Hyperlink>
                 </TextBlock>

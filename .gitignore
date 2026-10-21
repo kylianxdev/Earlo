@@ -7,3 +7,4 @@ preview/
 .vscode/
 TestResults/
 podpilot-log.txt
+src/PodPilot.App/DriverPackage/

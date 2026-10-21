@@ -1,0 +1,6 @@
+{
+  "_comment": "Replace with the values from Partner Center > your app > Product identity after reserving the name.",
+  "IdentityName": "PodPilot.Development",
+  "Publisher": "CN=PodPilot Development",
+  "PublisherDisplayName": "PodPilot"
+}

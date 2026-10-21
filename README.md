@@ -22,8 +22,9 @@
 - **Low battery warnings** for each earbud and the case.
 - **Works with every AirPods and Beats model** (see below). Models released after this version still show their battery levels.
 - **Your own device name** ("My AirPods Pro") when the headphones are paired with your PC.
+- **Updates itself**: the GitHub version installs new releases automatically (can be turned off), the Store version updates through the Store.
 - Starts with Windows, follows light and dark mode, uses the Windows 11 look.
-- **No drivers, no account, no telemetry, no internet.** It only listens to Bluetooth LE broadcasts.
+- **No drivers needed, no account, no telemetry.** It only listens to Bluetooth LE broadcasts. The only internet traffic is the update check against GitHub ([privacy policy](PRIVACY.md)).
 
 ## Supported devices
 
@@ -74,18 +75,34 @@ Because the levels come in 10% steps (for example "80 to 89%"), PodPilot shows t
 | Bluetooth LE scanning | [`AdvertisementScanner.cs`](src/PodPilot.Core/Bluetooth/AdvertisementScanner.cs) |
 | Media pause/resume | [`MediaController.cs`](src/PodPilot.Core/Media/MediaController.cs) |
 
-### Noise control (experimental)
+### Noise control: it works, but Windows makes it hard
 
 Switching noise control (Off, Noise Cancellation, Transparency, Adaptive), Conversation Awareness, Adaptive strength
 and exact 1% battery levels need Apple's AAP protocol over a Bluetooth L2CAP channel (PSM `0x1001`).
-Windows does not let normal apps open L2CAP channels, so PodPilot ships an open-source kernel driver for it: see [`driver/`](driver/README.md).
+Windows does not let normal apps open L2CAP channels, so PodPilot has its own open-source kernel driver for it: see [`driver/`](driver/README.md).
 
 <p align="center">
   <img src="docs/screenshots/popup-noise-control.png" width="380" alt="Popup with noise control buttons">
 </p>
 
-The driver is **experimental and not yet verified on real AirPods**. Until it is signed through Microsoft,
-it only loads with Windows test signing enabled. Without the driver, everything else in PodPilot works as usual.
+**The driver works.** Installing it is the hard part: Windows only loads drivers signed by Microsoft, and this one is not (yet, see below).
+On a PC with Secure Boot (almost every modern PC) you have to start Windows with "Disable driver signature enforcement" (F7 in Startup Settings),
+and you have to do that again after every restart. The GitHub version of PodPilot has an **Install noise control driver** button in Settings
+that does the rest for you. Without the driver, everything else in PodPilot works as usual.
+
+## Help unlock noise control for everyone
+
+We figured out how to switch AirPods noise control on Windows, the thing people have wanted for years. The driver is written, open source and it works.
+The only thing between you and a one-click install is a signature from Microsoft.
+
+To sign a driver, Microsoft requires an EV code signing certificate, and those cost up to **about €700 per year**, every year. Blame Microsoft.
+With that signature the driver installs with one click, Secure Boot stays on and it keeps working after a restart. PodPilot even switches to the signed driver automatically.
+
+**Want to help?** Get PodPilot from the [Microsoft Store](#microsoft-store) for about €1. You get automatic updates through the Store,
+and every purchase goes towards the signing certificate. PodPilot stays free and open source on GitHub, so it is your choice.
+
+<a id="microsoft-store"></a>
+> **Microsoft Store:** coming soon. The link will be here as soon as the listing is live.
 
 | Part | File |
 | --- | --- |
@@ -123,8 +140,10 @@ dotnet publish src/PodPilot.App -c Release -r win-x64 --self-contained -p:Publis
 ## Roadmap
 
 - [x] AAP protocol layer: noise control, Conversation Awareness, exact battery levels
-- [ ] Verify the AAP driver on real hardware
-- [ ] Sign the driver through Microsoft Partner Center, so no test mode is needed
+- [x] AAP driver working on real AirPods
+- [x] Automatic updates
+- [ ] Microsoft Store release
+- [ ] Sign the driver through Microsoft, so no F7 boot is needed ([help fund it](#help-unlock-noise-control-for-everyone))
 - [ ] Translations
 - [ ] Installer and winget package
 

@@ -27,6 +27,7 @@ public sealed class AppSettings : INotifyPropertyChanged
     int _rssiThreshold = -70;
     bool _requireConnected = true;
     bool _firstRunDone;
+    bool _autoUpdate = true;
 
     public bool StartWithWindows { get => _startWithWindows; set => Set(ref _startWithWindows, value); }
     public bool PopupOnLidOpen { get => _popupOnLidOpen; set => Set(ref _popupOnLidOpen, value); }
@@ -47,6 +48,9 @@ public sealed class AppSettings : INotifyPropertyChanged
     public bool RequireConnected { get => _requireConnected; set => Set(ref _requireConnected, value); }
 
     public bool FirstRunDone { get => _firstRunDone; set => Set(ref _firstRunDone, value); }
+
+    /// <summary>Install new GitHub releases automatically (the Store version updates through the Store).</summary>
+    public bool AutoUpdate { get => _autoUpdate; set => Set(ref _autoUpdate, value); }
 
     [JsonIgnore]
     public bool Persist { get; set; } = true;

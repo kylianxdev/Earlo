@@ -7,8 +7,8 @@ This KMDF driver loads on the AirPods' vendor Bluetooth service
 `{4715650b-5e9d-4ac2-b898-a4fc0aa5df78}`, opens that channel and passes raw packets to PodPilot.
 All protocol logic lives in the app ([`src/PodPilot.Core/Aap`](../src/PodPilot.Core/Aap)).
 
-> **Status: experimental, not yet verified on hardware.** It builds in CI, but no one has confirmed it on real AirPods yet.
-> Please report results in an issue, together with a `--log` file.
+> **Status: works on real AirPods.** It is not signed by Microsoft yet, so it only loads after the F7 boot option (see below).
+> Problems? Open an issue with a `--log` file from PodPilot.
 
 ## Interface
 
@@ -36,7 +36,7 @@ Test-signed drivers only load with Windows test signing enabled, which lowers se
      ("Disable driver signature enforcement"). After the next normal restart everything is back to normal.
    - **Permanent:** `bcdedit /set testsigning on` and restart. With Secure Boot on, Windows refuses this
      ("protected by Secure Boot policy"); you would have to turn Secure Boot off in UEFI, which breaks some game anti-cheat (for example Riot Vanguard).
-4. In an administrator PowerShell in that folder: `powershell -ExecutionPolicy Bypass -File install-driver.ps1` (add `-Force` after the F7 boot).
+4. Easiest: in PodPilot, open Settings > Noise control > **Install noise control driver**. Or, in an administrator PowerShell in the unzipped folder: `powershell -ExecutionPolicy Bypass -File install-driver.ps1` (add `-Force` after the F7 boot).
 5. Start PodPilot. Noise control buttons appear when the channel is open.
 
 If Memory integrity (Windows Security > Device security > Core isolation) is on, Windows may still block the driver.
