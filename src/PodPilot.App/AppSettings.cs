@@ -23,7 +23,7 @@ public sealed class AppSettings : INotifyPropertyChanged
     bool _resumeOnInsert = true;
     bool _lowBatteryWarning = true;
     int _lowBatteryThreshold = 20;
-    bool _trayShowsBattery = true;
+    bool _trayShowsBattery;
     int _rssiThreshold = -70;
     bool _requireConnected = true;
     bool _volumeSwipe = true;
