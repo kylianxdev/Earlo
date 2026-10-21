@@ -11,7 +11,7 @@ Class       = Bluetooth
 ClassGuid   = {e0cbf06c-cd8b-4647-bb8a-263b43f0f974}
 Provider    = %ProviderName%
 CatalogFile = PodPilotAap.cat
-DriverVer   = 01/01/2026,0.1.0.0
+DriverVer   = 10/21/2026,0.2.0.0
 PnpLockdown = 1
 
 [DestinationDirs]

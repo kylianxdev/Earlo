@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -13,7 +13,7 @@
     <RootNamespace>PodPilot.App</RootNamespace>
     <ApplicationIcon>Assets\podpilot.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
     <Product>PodPilot</Product>
     <Description>Open-source AirPods and Beats companion for Windows</Description>
     <Copyright>PodPilot contributors</Copyright>
