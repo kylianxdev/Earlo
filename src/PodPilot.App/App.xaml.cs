@@ -77,7 +77,7 @@ public partial class App : Application
         Theme.Initialize(this);
         AutoStart.Apply(_settings.StartWithWindows);
 
-        _tray = new TrayIcon();
+        _tray = new TrayIcon(_settings);
         _tray.ShowPopup += (_, _) => TogglePopup();
         _tray.OpenSettings += (_, _) => ShowSettings();
         _tray.ExitRequested += (_, _) => Shutdown();

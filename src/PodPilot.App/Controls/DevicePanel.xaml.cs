@@ -65,9 +65,8 @@ public partial class DevicePanel : UserControl
         RightBar.State = Exact(aap?.Right) ?? snapshot.Right;
         CaseBar.State = Exact(aap?.Case) ?? snapshot.Case;
         SingleBar.State = Exact(aap?.Single) ?? snapshot.Single;
-        PodChips.Visibility = hasCase ? Visibility.Visible : Visibility.Collapsed;
-        LeftChip.Placement = Placement(snapshot.LeftInEar, snapshot.LeftInCase, snapshot.Left.IsKnown);
-        RightChip.Placement = Placement(snapshot.RightInEar, snapshot.RightInCase, snapshot.Right.IsKnown);
+        LeftBar.Placement = Placement(snapshot.LeftInEar, snapshot.LeftInCase, snapshot.Left.IsKnown);
+        RightBar.Placement = Placement(snapshot.RightInEar, snapshot.RightInCase, snapshot.Right.IsKnown);
 
         bool hasNoiseControl = aap is not null && device.NoiseControl != NoiseControlSupport.None;
         NoiseBar.Visibility = hasNoiseControl ? Visibility.Visible : Visibility.Collapsed;

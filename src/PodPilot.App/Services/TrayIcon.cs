@@ -36,7 +36,7 @@ public sealed partial class TrayIcon : IDisposable
     string _lastKey = string.Empty;
     bool _added;
 
-    public TrayIcon()
+    public TrayIcon(AppSettings settings)
     {
         _window = new HwndSource(new HwndSourceParameters("PodPilotTray") { Width = 0, Height = 0, WindowStyle = 0 });
         _window.AddHook(WndProc);
@@ -46,10 +46,15 @@ public sealed partial class TrayIcon : IDisposable
         _currentIcon = _appIcon;
 
         _menu = new ContextMenu { Placement = PlacementMode.MousePoint };
-        _menu.Items.Add(MenuItem("Show battery", () => ShowPopup?.Invoke(this, EventArgs.Empty)));
-        _menu.Items.Add(MenuItem("Settings", () => OpenSettings?.Invoke(this, EventArgs.Empty)));
+        _menu.Items.Add(CreateMenuItem("Show battery", () => ShowPopup?.Invoke(this, EventArgs.Empty)));
+        _menu.Items.Add(CreateMenuItem("Settings", () => OpenSettings?.Invoke(this, EventArgs.Empty)));
         _menu.Items.Add(new Separator());
-        _menu.Items.Add(MenuItem("Exit", () => ExitRequested?.Invoke(this, EventArgs.Empty)));
+        var autoStart = new MenuItem { Header = "Start with Windows", IsCheckable = true };
+        autoStart.SetBinding(MenuItem.IsCheckedProperty,
+            new System.Windows.Data.Binding(nameof(AppSettings.StartWithWindows)) { Source = settings, Mode = System.Windows.Data.BindingMode.TwoWay });
+        _menu.Items.Add(autoStart);
+        _menu.Items.Add(new Separator());
+        _menu.Items.Add(CreateMenuItem("Exit", () => ExitRequested?.Invoke(this, EventArgs.Empty)));
 
         Apply(NIM_ADD);
     }
@@ -143,7 +148,7 @@ public sealed partial class TrayIcon : IDisposable
         szInfoTitle = string.Empty,
     };
 
-    static MenuItem MenuItem(string header, Action action)
+    static MenuItem CreateMenuItem(string header, Action action)
     {
         var item = new MenuItem { Header = header };
         item.Click += (_, _) => action();

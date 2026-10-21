@@ -18,11 +18,6 @@
                 <c:DeviceArt x:Name="CaseArt" Grid.Column="1" ShowCase="True" Width="96" Margin="8,40,0,20" />
             </Grid>
 
-            <UniformGrid x:Name="PodChips" Columns="2" Margin="0,0,0,10">
-                <c:PodStatusChip x:Name="LeftChip" Margin="0,0,4,0" />
-                <c:PodStatusChip x:Name="RightChip" Margin="4,0,0,0" IsRight="True" />
-            </UniformGrid>
-
             <c:BatteryBar x:Name="LeftBar" Label="Left" />
             <c:BatteryBar x:Name="RightBar" Label="Right" />
             <c:BatteryBar x:Name="CaseBar" Label="Case" />

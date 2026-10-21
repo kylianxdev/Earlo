@@ -36,6 +36,36 @@ public partial class BatteryBar : UserControl
         }
     }
 
+    PodPlacement _placement = PodPlacement.Unknown;
+
+    /// <summary>Shows where the earbud is under its label. Unknown hides the line.</summary>
+    public PodPlacement Placement
+    {
+        get => _placement;
+        set
+        {
+            if (_placement == value)
+                return;
+            bool wasShown = _placement != PodPlacement.Unknown;
+            _placement = value;
+
+            (string text, string brush) = value switch
+            {
+                PodPlacement.InEar => ("In ear", "BatteryGood"),
+                PodPlacement.OutOfEar => ("Out of ear", "TextSecondary"),
+                PodPlacement.InCase => ("In case", "Accent"),
+                _ => (string.Empty, "TextSecondary"),
+            };
+            StatusPanel.Visibility = value == PodPlacement.Unknown ? Visibility.Collapsed : Visibility.Visible;
+            StatusText.Text = text;
+            StatusText.SetResourceReference(TextBlock.ForegroundProperty, brush);
+            StatusDot.SetResourceReference(System.Windows.Shapes.Shape.FillProperty, brush);
+            // Fade in on a change (an AirPod taken out), not on first display.
+            if (wasShown)
+                StatusPanel.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(300)));
+        }
+    }
+
     void OnTrackSizeChanged(object sender, SizeChangedEventArgs e) => Render(animate: false);
 
     void Render(bool animate)
