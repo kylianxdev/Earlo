@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:c="clr-namespace:PodPilot.App.Controls"
+        xmlns:app="clr-namespace:PodPilot.App"
         Title="PodPilot" Width="860" Height="640" MinWidth="720" MinHeight="480"
         WindowStartupLocation="CenterScreen" Icon="pack://application:,,,/Assets/podpilot.ico">
     <Grid Margin="24">
@@ -17,8 +18,8 @@
                 <c:DevicePanel x:Name="Panel" />
             </Border>
             <WrapPanel Margin="0,12,0,0">
-                <Button Content="Show popup" Click="OnShowPopupClick" Margin="0,0,8,8" />
-                <Button Content="Bluetooth settings" Click="OnBluetoothClick" Margin="0,0,8,8" />
+                <Button Content="{x:Static app:Strings.ShowPopup}" Click="OnShowPopupClick" Margin="0,0,8,8" />
+                <Button Content="{x:Static app:Strings.BluetoothSettings}" Click="OnBluetoothClick" Margin="0,0,8,8" />
             </WrapPanel>
             <TextBlock x:Name="PairedText" Style="{StaticResource Hint}" Margin="0,4,0,0" />
         </StackPanel>
@@ -26,82 +27,87 @@
         <!-- Settings -->
         <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="0,0,12,0">
-                <TextBlock Text="Settings" FontSize="26" FontWeight="SemiBold" />
+                <TextBlock Text="{x:Static app:Strings.Settings}" FontSize="26" FontWeight="SemiBold" />
 
-                <TextBlock Text="General" Style="{StaticResource SectionHeader}" />
-                <CheckBox Content="Start PodPilot with Windows" IsChecked="{Binding StartWithWindows}" />
-                <CheckBox Content="Show battery level in the tray icon" IsChecked="{Binding TrayShowsBattery}" />
+                <TextBlock Text="{x:Static app:Strings.General}" Style="{StaticResource SectionHeader}" />
+                <CheckBox Content="{x:Static app:Strings.StartWithWindows}" IsChecked="{Binding StartWithWindows}" />
+                <CheckBox Content="{x:Static app:Strings.TrayShowsBattery}" IsChecked="{Binding TrayShowsBattery}" />
 
-                <TextBlock Text="Popup" Style="{StaticResource SectionHeader}" />
-                <CheckBox Content="Show popup when the case is opened" IsChecked="{Binding PopupOnLidOpen}" />
-                <CheckBox Content="Show popup when headphones connect" IsChecked="{Binding PopupOnConnect}" />
+                <TextBlock Text="{x:Static app:Strings.Popup}" Style="{StaticResource SectionHeader}" />
+                <CheckBox Content="{x:Static app:Strings.PopupOnLidOpen}" IsChecked="{Binding PopupOnLidOpen}" />
+                <CheckBox Content="{x:Static app:Strings.PopupOnConnect}" IsChecked="{Binding PopupOnConnect}" />
                 <DockPanel Margin="0,8,0,0">
                     <TextBlock DockPanel.Dock="Right" Width="40" TextAlignment="Right" VerticalAlignment="Center" Text="{Binding PopupSeconds, StringFormat={}{0} s}" />
-                    <TextBlock Text="Hide after" VerticalAlignment="Center" Width="110" />
+                    <TextBlock Text="{x:Static app:Strings.HideAfter}" VerticalAlignment="Center" Width="110" />
                     <Slider Minimum="3" Maximum="30" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding PopupSeconds}" VerticalAlignment="Center" />
                 </DockPanel>
 
-                <TextBlock Text="Automatic ear detection" Style="{StaticResource SectionHeader}" />
-                <CheckBox Content="Pause media when you take an AirPod out" IsChecked="{Binding EarDetection}" />
+                <TextBlock Text="{x:Static app:Strings.Connection}" Style="{StaticResource SectionHeader}" />
+                <CheckBox Content="{x:Static app:Strings.AutoConnect}" IsChecked="{Binding AutoConnect}" />
+                <TextBlock Style="{StaticResource Hint}" Text="{x:Static app:Strings.AutoConnectHint}" />
+                <CheckBox Content="{x:Static app:Strings.VolumeOsd}" Margin="0,8,0,0" IsChecked="{Binding VolumeOsd}" />
+
+                <TextBlock Text="{x:Static app:Strings.EarDetection}" Style="{StaticResource SectionHeader}" />
+                <CheckBox Content="{x:Static app:Strings.PauseOnRemove}" IsChecked="{Binding EarDetection}" />
                 <DockPanel Margin="28,6,0,6" IsEnabled="{Binding EarDetection}">
-                    <TextBlock Text="Pause when" VerticalAlignment="Center" Width="82" />
+                    <TextBlock Text="{x:Static app:Strings.PauseWhen}" VerticalAlignment="Center" Width="82" />
                     <ComboBox SelectedIndex="{Binding PauseMode}" MinWidth="200">
-                        <ComboBoxItem Content="one AirPod is removed" />
-                        <ComboBoxItem Content="both AirPods are removed" />
+                        <ComboBoxItem Content="{x:Static app:Strings.PauseOne}" />
+                        <ComboBoxItem Content="{x:Static app:Strings.PauseBoth}" />
                     </ComboBox>
                 </DockPanel>
-                <CheckBox Content="Resume when you put them back in" Margin="28,0,0,0" IsChecked="{Binding ResumeOnInsert}" IsEnabled="{Binding EarDetection}" />
-                <CheckBox Content="Only when the AirPods are connected to this PC" Margin="28,4,0,0" IsChecked="{Binding RequireConnected}" IsEnabled="{Binding EarDetection}" />
-                <TextBlock Style="{StaticResource Hint}" Text="Works with Spotify, browsers, Media Player and every app that shows up in the Windows media controls." />
+                <CheckBox Content="{x:Static app:Strings.ResumeOnInsert}" Margin="28,0,0,0" IsChecked="{Binding ResumeOnInsert}" IsEnabled="{Binding EarDetection}" />
+                <CheckBox Content="{x:Static app:Strings.OnlyWhenConnected}" Margin="28,4,0,0" IsChecked="{Binding RequireConnected}" IsEnabled="{Binding EarDetection}" />
+                <TextBlock Style="{StaticResource Hint}" Text="{x:Static app:Strings.MediaHint}" />
 
-                <TextBlock Text="Noise control" Style="{StaticResource SectionHeader}" />
+                <TextBlock Text="{x:Static app:Strings.NoiseControl}" Style="{StaticResource SectionHeader}" />
                 <TextBlock x:Name="AapStatusText" TextWrapping="Wrap" Opacity="0.8" />
                 <StackPanel x:Name="DriverPanel" Margin="0,8,0,0" Visibility="Collapsed">
                     <Button x:Name="DriverButton" HorizontalAlignment="Left" Click="OnDriverClick" />
                     <TextBlock x:Name="DriverNote" Style="{StaticResource Hint}" Margin="0,6,0,0" />
                 </StackPanel>
                 <CheckBox x:Name="VolumeSwipeCheck" Margin="0,8,0,0" Visibility="Collapsed"
-                          Content="Swipe up or down on the stem to change the volume" IsChecked="{Binding VolumeSwipe}" Click="OnVolumeSwipeClick" />
+                          Content="{x:Static app:Strings.VolumeSwipe}" IsChecked="{Binding VolumeSwipe}" Click="OnVolumeSwipeClick" />
                 <StackPanel x:Name="AapControls" Margin="0,8,0,0" Visibility="Collapsed">
-                    <CheckBox x:Name="ConversationToggle" Content="Conversation Awareness (lower volume when you speak)" Click="OnConversationClick" />
+                    <CheckBox x:Name="ConversationToggle" Content="{x:Static app:Strings.ConversationAwareness}" Click="OnConversationClick" />
                     <DockPanel x:Name="AdaptivePanel" Margin="0,8,0,0">
                         <TextBlock DockPanel.Dock="Right" Width="40" TextAlignment="Right" VerticalAlignment="Center" Text="{Binding Value, ElementName=AdaptiveSlider, StringFormat={}{0:0}}" />
-                        <TextBlock Text="Adaptive strength" VerticalAlignment="Center" Width="130" />
+                        <TextBlock Text="{x:Static app:Strings.AdaptiveStrength}" VerticalAlignment="Center" Width="130" />
                         <Slider x:Name="AdaptiveSlider" Minimum="0" Maximum="100" TickFrequency="5" IsSnapToTickEnabled="True" VerticalAlignment="Center"
                                 Thumb.DragCompleted="OnAdaptiveDragCompleted" />
                     </DockPanel>
-                    <TextBlock Style="{StaticResource Hint}" Margin="0,4,0,0" Text="Lower lets in more ambient sound, higher filters more noise. Only applies in Adaptive mode." />
+                    <TextBlock Style="{StaticResource Hint}" Margin="0,4,0,0" Text="{x:Static app:Strings.AdaptiveHint}" />
                 </StackPanel>
 
-                <TextBlock Text="Notifications" Style="{StaticResource SectionHeader}" />
-                <CheckBox Content="Warn when the battery is low" IsChecked="{Binding LowBatteryWarning}" />
+                <TextBlock Text="{x:Static app:Strings.Notifications}" Style="{StaticResource SectionHeader}" />
+                <CheckBox Content="{x:Static app:Strings.WarnLowBattery}" IsChecked="{Binding LowBatteryWarning}" />
                 <DockPanel Margin="28,8,0,0" IsEnabled="{Binding LowBatteryWarning}">
                     <TextBlock DockPanel.Dock="Right" Width="40" TextAlignment="Right" VerticalAlignment="Center" Text="{Binding LowBatteryThreshold, StringFormat={}{0}%}" />
-                    <TextBlock Text="Warn at" VerticalAlignment="Center" Width="82" />
+                    <TextBlock Text="{x:Static app:Strings.WarnAt}" VerticalAlignment="Center" Width="82" />
                     <Slider Minimum="10" Maximum="50" TickFrequency="10" IsSnapToTickEnabled="True" Value="{Binding LowBatteryThreshold}" VerticalAlignment="Center" />
                 </DockPanel>
 
-                <TextBlock Text="Advanced" Style="{StaticResource SectionHeader}" />
+                <TextBlock Text="{x:Static app:Strings.Advanced}" Style="{StaticResource SectionHeader}" />
                 <DockPanel>
                     <TextBlock DockPanel.Dock="Right" Width="70" TextAlignment="Right" VerticalAlignment="Center" Text="{Binding RssiThreshold, StringFormat={}{0} dBm}" />
-                    <TextBlock Text="Detection range" VerticalAlignment="Center" Width="110" />
+                    <TextBlock Text="{x:Static app:Strings.DetectionRange}" VerticalAlignment="Center" Width="110" />
                     <Slider Minimum="-95" Maximum="-40" TickFrequency="5" IsSnapToTickEnabled="True" Value="{Binding RssiThreshold}" VerticalAlignment="Center" />
                 </DockPanel>
-                <TextBlock Style="{StaticResource Hint}" Margin="0,4,0,0" Text="Lower values detect AirPods further away. Raise it if a colleague's AirPods show up instead of yours." />
+                <TextBlock Style="{StaticResource Hint}" Margin="0,4,0,0" Text="{x:Static app:Strings.RangeHint}" />
 
-                <TextBlock Text="About" Style="{StaticResource SectionHeader}" />
+                <TextBlock Text="{x:Static app:Strings.About}" Style="{StaticResource SectionHeader}" />
                 <TextBlock x:Name="VersionText" Opacity="0.8" />
                 <StackPanel x:Name="UpdatePanel" Margin="0,8,0,0">
-                    <CheckBox x:Name="AutoUpdateCheck" Content="Install updates automatically" IsChecked="{Binding AutoUpdate}" />
+                    <CheckBox x:Name="AutoUpdateCheck" Content="{x:Static app:Strings.AutoUpdate}" IsChecked="{Binding AutoUpdate}" />
                     <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                        <Button x:Name="CheckUpdatesButton" Content="Check for updates" Click="OnCheckUpdatesClick" />
+                        <Button x:Name="CheckUpdatesButton" Content="{x:Static app:Strings.CheckUpdates}" Click="OnCheckUpdatesClick" />
                         <TextBlock x:Name="UpdateStatusText" Margin="12,0,0,0" VerticalAlignment="Center" Opacity="0.8" TextWrapping="Wrap" />
                     </StackPanel>
                 </StackPanel>
                 <TextBlock Margin="0,4,0,0">
                     <Hyperlink NavigateUri="https://github.com/kylianxdev/PodPilot" RequestNavigate="OnLinkNavigate">github.com/kylianxdev/PodPilot</Hyperlink>
                 </TextBlock>
-                <TextBlock Style="{StaticResource Hint}" Margin="0,8,0,24" Text="PodPilot is free and open source. AirPods and Beats are trademarks of Apple Inc. This project is not affiliated with Apple." />
+                <TextBlock Style="{StaticResource Hint}" Margin="0,8,0,24" Text="{x:Static app:Strings.AboutHint}" />
             </StackPanel>
         </ScrollViewer>
     </Grid>

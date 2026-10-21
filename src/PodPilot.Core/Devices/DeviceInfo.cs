@@ -31,7 +31,8 @@ public sealed record DeviceInfo(
     FormFactor FormFactor,
     bool IsBeats = false,
     bool IsKnown = true,
-    NoiseControlSupport NoiseControl = NoiseControlSupport.None)
+    NoiseControlSupport NoiseControl = NoiseControlSupport.None,
+    bool IsSamsung = false)
 {
     /// <summary>Single-battery products report one level instead of left/right/case.</summary>
     public bool HasSingleBattery => FormFactor is FormFactor.Headphones or FormFactor.Neckband;

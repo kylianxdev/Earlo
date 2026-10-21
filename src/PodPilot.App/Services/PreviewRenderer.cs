@@ -55,6 +55,11 @@ public static class PreviewRenderer
             new DeviceViewState(DemoMode.Snapshot(0x1020, 30, null, null, false), null, ScannerStatus.Scanning, 20));
         RenderPopup(Path.Combine(folder, "popup-unknown-model.png"),
             new DeviceViewState(DemoMode.Snapshot(0x9920, 50, 40, 70), null, ScannerStatus.Scanning, 20));
+        var galaxy = new PodPilot.Core.Samsung.GalaxyBudsStatus(72, 68, 45, false, false, true,
+            PodPilot.Core.Samsung.BudPlacement.Wearing, PodPilot.Core.Samsung.BudPlacement.InOpenCase);
+        RenderPopup(Path.Combine(folder, "popup-galaxy-buds.png"),
+            new DeviceViewState(PodPilot.Core.Samsung.GalaxyBudsManager.ToSnapshot(PodPilot.Core.Samsung.GalaxyBudsModel.Buds2Pro, galaxy),
+                new PairedDeviceInfo("demo", "Galaxy Buds2 Pro (A1B2)", true), ScannerStatus.Scanning, 20, CanConnect: true));
         RenderPopup(Path.Combine(folder, "popup-searching.png"),
             new DeviceViewState(null, null, ScannerStatus.Scanning, 20));
     }

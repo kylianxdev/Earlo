@@ -8,6 +8,7 @@ using PodPilot.App.Services;
 using PodPilot.Core.Aap;
 using PodPilot.Core.Bluetooth;
 using PodPilot.Core.Media;
+using PodPilot.Core.Samsung;
 using PodPilot.Core.Tracking;
 
 namespace PodPilot.App;
@@ -23,6 +24,7 @@ public partial class App : Application
     readonly MediaController _media = new();
     readonly AapDeviceManager _aap = new();
     readonly CaseBatteryMemory _caseMemory = new();
+    readonly GalaxyBudsManager _galaxy = new();
 
     Mutex? _instanceMutex;
     EventWaitHandle? _activateEvent;
@@ -38,6 +40,12 @@ public partial class App : Application
     bool _updating;
     bool _driverInstalled;
     bool _driverBusy;
+    VolumeOsdWindow? _osd;
+    AudioEndpoints.VolumeWatcher? _volumeWatcher;
+    string? _volumeWatcherId;
+    DateTime _osdQuietUntil;
+    bool _connecting;
+    DateTime _lastAutoConnect;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -117,8 +125,17 @@ public partial class App : Application
             if (_settings.PopupOnLidOpen)
                 ShowPopup();
         };
-        _tracker.EarStatusChanged += async (_, args) =>
-            await _earDetection.OnEarStatusChangedAsync(args, _paired.ConnectedDevice is not null);
+        _tracker.EarStatusChanged += async (_, args) => await OnEarStatusChangedAsync(args);
+
+        // Galaxy Buds report over their own serial channel; they feed the same UI as AirPods.
+        _galaxy.Updated += (_, snapshot) => Dispatcher.BeginInvoke(() => OnUpdated(snapshot));
+        _galaxy.Lost += (_, _) => Dispatcher.BeginInvoke(Refresh);
+        _galaxy.LidOpened += (_, _) => Dispatcher.BeginInvoke(() =>
+        {
+            if (_settings.PopupOnLidOpen)
+                ShowPopup();
+        });
+        _galaxy.EarStatusChanged += (_, args) => Dispatcher.BeginInvoke(async () => await OnEarStatusChangedAsync(args));
 
         _scanner.Received += (_, a) => Dispatcher.BeginInvoke(() => _tracker.Process(a.Message, a.Rssi));
         _scanner.StatusChanged += (_, _) => Dispatcher.BeginInvoke(Refresh);
@@ -141,12 +158,14 @@ public partial class App : Application
         {
             _tracker.Expire();
             _ = _scanner.EnsureRunningAsync();
+            _ = _galaxy.EnsureAsync(_paired.Devices);
+            UpdateVolumeWatcher();
         };
         _tick.Start();
 
         Updater.CleanUp();
         if (updated)
-            _tray.Notify("PodPilot updated", $"You now have PodPilot {Updater.CurrentVersion.ToString(3)}.");
+            _tray.Notify(Strings.Updated, Strings.UpdatedText(Updater.CurrentVersion.ToString(3)));
         if (Updater.Supported)
         {
             _updateTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
@@ -174,9 +193,79 @@ public partial class App : Application
         Refresh();
     }
 
+    /// <summary>Connected Galaxy Buds win over AirPods that are merely nearby.</summary>
+    PodsSnapshot? CurrentSnapshot => _galaxy.Current ?? _tracker.Current;
+
     DeviceViewState CurrentState() =>
-        new(_tracker.Current is { } snapshot ? _caseMemory.Apply(snapshot) : null,
-            _paired.ConnectedDevice, _scanner.Status, _settings.LowBatteryThreshold, _aap.Current?.State);
+        new(CurrentSnapshot is { } snapshot ? _caseMemory.Apply(snapshot) : null,
+            _paired.ConnectedDevice, _scanner.Status, _settings.LowBatteryThreshold, _aap.Current?.State,
+            CanConnect: ConnectTarget is not null, Connecting: _connecting);
+
+    /// <summary>The paired earbuds the Connect button acts on: the connected ones, else the first paired.</summary>
+    PairedDeviceInfo? ConnectTarget => _paired.ConnectedDevice ?? _paired.Devices.FirstOrDefault();
+
+    async System.Threading.Tasks.Task ConnectAsync(bool connect)
+    {
+        if (_connecting || ConnectTarget is not { } target)
+            return;
+        _connecting = true;
+        Refresh();
+        bool ok = await System.Threading.Tasks.Task.Run(() =>
+            connect ? AudioEndpoints.Connect(target) : AudioEndpoints.Disconnect(target));
+        if (ok && connect)
+        {
+            // The connection event arrives a few seconds later; keep showing "Connecting..." until then.
+            for (int i = 0; i < 20 && _paired.ConnectedDevice is null; i++)
+                await System.Threading.Tasks.Task.Delay(500);
+        }
+        _connecting = false;
+        if (connect && _paired.ConnectedDevice is null)
+            _tray?.Notify("PodPilot", Strings.ConnectFailed(target.Name));
+        Refresh();
+    }
+
+    async System.Threading.Tasks.Task OnEarStatusChangedAsync(EarStatusChangedEventArgs args)
+    {
+        MaybeAutoConnect(args);
+        await _earDetection!.OnEarStatusChangedAsync(args, _paired.ConnectedDevice is not null);
+    }
+
+    /// <summary>Earbuds went into an ear while connected elsewhere: bring them to this PC.</summary>
+    void MaybeAutoConnect(EarStatusChangedEventArgs args)
+    {
+        bool wasWearing = args.WasLeftInEar || args.WasRightInEar;
+        if (!_settings.AutoConnect || wasWearing || !args.Snapshot.AnyInEar || _paired.ConnectedDevice is not null)
+            return;
+        if (DateTime.UtcNow - _lastAutoConnect < TimeSpan.FromSeconds(30))
+            return;
+        _lastAutoConnect = DateTime.UtcNow;
+        _ = ConnectAsync(connect: true);
+    }
+
+    /// <summary>Follows the volume of the connected earbuds to show stem swipes on screen.</summary>
+    void UpdateVolumeWatcher()
+    {
+        var device = _settings.VolumeOsd ? _paired.ConnectedDevice : null;
+        if (device?.Id == _volumeWatcherId && (device is null || _volumeWatcher is not null))
+            return;
+
+        _volumeWatcher?.Dispose();
+        _volumeWatcher = null;
+        _volumeWatcherId = device?.Id;
+        if (device is null)
+            return;
+        // Connecting sets the volume once; that is not a swipe.
+        _osdQuietUntil = DateTime.UtcNow.AddSeconds(2);
+        _volumeWatcher = AudioEndpoints.WatchVolume(device, (level, muted) => Dispatcher.BeginInvoke(() => ShowVolume(level, muted)));
+    }
+
+    void ShowVolume(float level, bool muted)
+    {
+        if (!_settings.VolumeOsd || DateTime.UtcNow < _osdQuietUntil)
+            return;
+        _osd ??= new VolumeOsdWindow();
+        _osd.ShowLevel(level, muted);
+    }
 
     void OnUpdated(PodsSnapshot snapshot)
     {
@@ -196,35 +285,35 @@ public partial class App : Application
         if (!Updater.Supported || _updating)
             return;
         _updating = true;
-        _settingsWindow?.SetUpdateStatus("Checking...", busy: true);
+        _settingsWindow?.SetUpdateStatus(Strings.Checking, busy: true);
         try
         {
             var update = await Updater.CheckAsync();
             if (update is null)
             {
-                _settingsWindow?.SetUpdateStatus(manual ? "PodPilot is up to date." : string.Empty);
+                _settingsWindow?.SetUpdateStatus(manual ? Strings.UpToDate : string.Empty);
                 return;
             }
 
             if (!manual && !_settings.AutoUpdate)
             {
-                _settingsWindow?.SetUpdateStatus($"Version {update.Version.ToString(3)} is available.");
-                _tray?.Notify("PodPilot update available", $"Version {update.Version.ToString(3)} is ready. Open Settings to install it.");
+                _settingsWindow?.SetUpdateStatus(Strings.UpdateAvailable(update.Version.ToString(3)));
+                _tray?.Notify(Strings.UpdateAvailableTitle, Strings.UpdateReady(update.Version.ToString(3)));
                 return;
             }
 
-            _settingsWindow?.SetUpdateStatus($"Installing {update.Version.ToString(3)}...", busy: true);
+            _settingsWindow?.SetUpdateStatus(Strings.Installing(update.Version.ToString(3)), busy: true);
             if (await Updater.InstallAsync(update))
             {
                 Shutdown(); // the new version is already starting
                 return;
             }
-            _settingsWindow?.SetUpdateStatus("The update could not be installed. Download it from GitHub.");
+            _settingsWindow?.SetUpdateStatus(Strings.UpdateFailed);
         }
         catch (Exception ex) when (ex is System.Net.Http.HttpRequestException or System.Threading.Tasks.TaskCanceledException or System.Text.Json.JsonException)
         {
             // Offline or GitHub unreachable: try again later.
-            _settingsWindow?.SetUpdateStatus(manual ? "Could not reach GitHub." : string.Empty);
+            _settingsWindow?.SetUpdateStatus(manual ? Strings.GitHubUnreachable : string.Empty);
         }
         finally
         {
@@ -253,11 +342,11 @@ public partial class App : Application
         if (ok)
         {
             _aap.RetryAll();
-            _tray?.Notify("PodPilot", removing ? "The noise control driver was removed." : "The noise control driver is installed.");
+            _tray?.Notify("PodPilot", removing ? Strings.DriverRemoved : Strings.DriverInstalled);
         }
         else
         {
-            _tray?.Notify("PodPilot", removing ? "The driver could not be removed." : "The driver was not installed.");
+            _tray?.Notify("PodPilot", removing ? Strings.DriverRemoveFailed : Strings.DriverInstallFailed);
         }
     }
 
@@ -281,12 +370,14 @@ public partial class App : Application
     {
         if (device.IsConnected)
             _aap.RetryAll();
+        _ = _galaxy.EnsureAsync(_paired.Devices);
+        UpdateVolumeWatcher();
         Refresh();
         if (!device.IsConnected || !_settings.PopupOnConnect)
             return;
 
         // Wait for the first advertisement after connecting so the popup has battery levels.
-        if (_tracker.Current is not null)
+        if (CurrentSnapshot is not null)
             ShowPopup();
         else
             _connectPopupUntil = DateTime.UtcNow.AddSeconds(15);
@@ -301,6 +392,9 @@ public partial class App : Application
                 break;
             case nameof(AppSettings.RssiThreshold):
                 _tracker.RssiThreshold = _settings.RssiThreshold;
+                break;
+            case nameof(AppSettings.VolumeOsd):
+                UpdateVolumeWatcher();
                 break;
         }
         Refresh();
@@ -322,6 +416,7 @@ public partial class App : Application
             _popup = new PopupWindow();
             _popup.SettingsRequested += (_, _) => ShowSettings();
             _popup.NoiseControlRequested += (_, mode) => SetNoiseControl(mode);
+            _popup.ConnectRequested += (_, connect) => _ = ConnectAsync(connect);
         }
         _popup.Duration = TimeSpan.FromSeconds(_settings.PopupSeconds);
         _popup.ShowAnimated(CurrentState());
@@ -342,6 +437,7 @@ public partial class App : Application
             _settingsWindow = new SettingsWindow(_settings);
             _settingsWindow.ShowPopupRequested += (_, _) => ShowPopup();
             _settingsWindow.NoiseControlRequested += (_, mode) => SetNoiseControl(mode);
+            _settingsWindow.ConnectRequested += (_, connect) => _ = ConnectAsync(connect);
             _settingsWindow.ConversationAwarenessRequested += (_, on) => _ = SendAap(s => s.SetConversationAwarenessAsync(on));
             _settingsWindow.AdaptiveStrengthRequested += (_, level) => _ = SendAap(s => s.SetAdaptiveStrengthAsync(level));
             _settingsWindow.DriverButtonClicked += async (_, _) => await ToggleDriverAsync();
@@ -361,9 +457,11 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         _tick?.Stop();
+        _volumeWatcher?.Dispose();
         _tray?.Dispose();
         _scanner.Dispose();
         _aap.Dispose();
+        _galaxy.Dispose();
         _paired.Dispose();
         _activateEvent?.Dispose();
         _instanceMutex?.Dispose();

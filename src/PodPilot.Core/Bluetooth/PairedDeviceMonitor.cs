@@ -5,16 +5,20 @@ using Windows.Devices.Enumeration;
 
 namespace PodPilot.Core.Bluetooth;
 
-public sealed record PairedDeviceInfo(string Id, string Name, bool IsConnected);
+/// <param name="ContainerId">Groups the device with its other parts, like its Windows audio endpoints.</param>
+public sealed record PairedDeviceInfo(string Id, string Name, bool IsConnected, Guid? ContainerId = null);
 
 /// <summary>
-/// Tracks AirPods and Beats that are paired with this PC and whether they are connected.
+/// Tracks AirPods, Beats and Galaxy Buds that are paired with this PC and whether they are connected.
 /// Used to show the user's own device name and to only control media for headphones in use.
 /// Events are raised on a background thread.
 /// </summary>
 public sealed partial class PairedDeviceMonitor : IDisposable
 {
+    const string ContainerIdProperty = "System.Devices.Aep.ContainerId";
+
     readonly ConcurrentDictionary<string, BluetoothDevice> _devices = new();
+    readonly ConcurrentDictionary<string, Guid> _containers = new();
     DeviceWatcher? _watcher;
 
     public event EventHandler<PairedDeviceInfo>? ConnectionChanged;
@@ -26,6 +30,9 @@ public sealed partial class PairedDeviceMonitor : IDisposable
     public PairedDeviceInfo? ConnectedDevice => Devices.FirstOrDefault(d => d.IsConnected);
 
     public static bool IsAppleAudioName(string? name) => name is not null && AppleAudioName().IsMatch(name);
+
+    /// <summary>AirPods, Beats or Galaxy Buds.</summary>
+    public static bool IsSupportedName(string? name) => IsAppleAudioName(name) || Samsung.GalaxyBudsModels.FromPairedName(name) is not null;
 
     public void Start()
     {
@@ -54,10 +61,21 @@ public sealed partial class PairedDeviceMonitor : IDisposable
             return;
         }
 
-        if (device is null || !IsAppleAudioName(device.Name) || !_devices.TryAdd(id, device))
+        if (device is null || !IsSupportedName(device.Name) || !_devices.TryAdd(id, device))
         {
             device?.Dispose();
             return;
+        }
+
+        try
+        {
+            var info = await DeviceInformation.CreateFromIdAsync(id, [ContainerIdProperty]);
+            if (info.Properties.TryGetValue(ContainerIdProperty, out var container) && container is Guid guid)
+                _containers[id] = guid;
+        }
+        catch (Exception)
+        {
+            // Without it audio endpoints are matched by name.
         }
 
         device.ConnectionStatusChanged += OnConnectionStatusChanged;
@@ -71,6 +89,7 @@ public sealed partial class PairedDeviceMonitor : IDisposable
     {
         if (!_devices.TryRemove(id, out var device))
             return;
+        _containers.TryRemove(id, out _);
         device.ConnectionStatusChanged -= OnConnectionStatusChanged;
         device.Dispose();
         DevicesChanged?.Invoke(this, EventArgs.Empty);
@@ -82,8 +101,9 @@ public sealed partial class PairedDeviceMonitor : IDisposable
         DevicesChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    static PairedDeviceInfo ToInfo(BluetoothDevice d) =>
-        new(d.DeviceId, d.Name, d.ConnectionStatus == BluetoothConnectionStatus.Connected);
+    PairedDeviceInfo ToInfo(BluetoothDevice d) =>
+        new(d.DeviceId, d.Name, d.ConnectionStatus == BluetoothConnectionStatus.Connected,
+            _containers.TryGetValue(d.DeviceId, out var container) ? container : null);
 
     [GeneratedRegex("airpods|beats", RegexOptions.IgnoreCase)]
     private static partial Regex AppleAudioName();

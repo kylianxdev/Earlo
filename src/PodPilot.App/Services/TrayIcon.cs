@@ -46,15 +46,15 @@ public sealed partial class TrayIcon : IDisposable
         _currentIcon = _appIcon;
 
         _menu = new ContextMenu { Placement = PlacementMode.MousePoint };
-        _menu.Items.Add(CreateMenuItem("Show battery", () => ShowPopup?.Invoke(this, EventArgs.Empty)));
-        _menu.Items.Add(CreateMenuItem("Settings", () => OpenSettings?.Invoke(this, EventArgs.Empty)));
+        _menu.Items.Add(CreateMenuItem(Strings.ShowBattery, () => ShowPopup?.Invoke(this, EventArgs.Empty)));
+        _menu.Items.Add(CreateMenuItem(Strings.Settings, () => OpenSettings?.Invoke(this, EventArgs.Empty)));
         _menu.Items.Add(new Separator());
-        var autoStart = new MenuItem { Header = "Start with Windows", IsCheckable = true };
+        var autoStart = new MenuItem { Header = Strings.TrayStartWithWindows, IsCheckable = true };
         autoStart.SetBinding(MenuItem.IsCheckedProperty,
             new System.Windows.Data.Binding(nameof(AppSettings.StartWithWindows)) { Source = settings, Mode = System.Windows.Data.BindingMode.TwoWay });
         _menu.Items.Add(autoStart);
         _menu.Items.Add(new Separator());
-        _menu.Items.Add(CreateMenuItem("Exit", () => ExitRequested?.Invoke(this, EventArgs.Empty)));
+        _menu.Items.Add(CreateMenuItem(Strings.Exit, () => ExitRequested?.Invoke(this, EventArgs.Empty)));
 
         Apply(NIM_ADD);
     }
@@ -158,12 +158,12 @@ public sealed partial class TrayIcon : IDisposable
     static string BuildTooltip(PodsSnapshot? s, string? name)
     {
         if (s is null)
-            return "PodPilot: no AirPods nearby";
+            return Strings.NothingNearby;
 
         string title = name ?? s.Device.Name;
         if (s.Device.HasSingleBattery)
             return $"{title}\n{Format(s.Single)}";
-        return $"{title}\nL {Format(s.Left)}  R {Format(s.Right)}  Case {Format(s.Case)}";
+        return $"{title}\n{Strings.ShortLeft} {Format(s.Left)}  {Strings.ShortRight} {Format(s.Right)}  {Strings.Case} {Format(s.Case)}";
     }
 
     static string Format(BatteryState b) => b.Percent is int p ? $"{(b.Stale ? "~" : "")}{p}%{(b.Charging ? "+" : "")}" : "--";

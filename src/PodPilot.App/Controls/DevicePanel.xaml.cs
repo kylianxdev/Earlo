@@ -20,6 +20,11 @@ public partial class DevicePanel : UserControl
 
     public event EventHandler<NoiseControlMode>? NoiseControlRequested;
 
+    /// <summary>The Connect/Disconnect button was clicked; true means connect.</summary>
+    public event EventHandler<bool>? ConnectRequested;
+
+    bool _connected;
+
     public void Update(DeviceViewState state)
     {
         var snapshot = state.Snapshot;
@@ -29,10 +34,10 @@ public partial class DevicePanel : UserControl
             EmptyView.Visibility = Visibility.Visible;
             (EmptyTitle.Text, EmptyText.Text) = state.ScannerStatus switch
             {
-                ScannerStatus.NoAdapter => ("No Bluetooth adapter", "PodPilot needs a Bluetooth 4.0 (LE) adapter."),
-                ScannerStatus.RadioOff => ("Bluetooth is off", "Turn on Bluetooth in Windows settings."),
-                ScannerStatus.Error => ("Bluetooth error", "Scanning stopped. PodPilot keeps retrying."),
-                _ => ("Looking for AirPods", "Open the case next to your PC, or put your AirPods in your ears."),
+                ScannerStatus.NoAdapter => (Strings.NoAdapterTitle, Strings.NoAdapterText),
+                ScannerStatus.RadioOff => (Strings.RadioOffTitle, Strings.RadioOffText),
+                ScannerStatus.Error => (Strings.ScanErrorTitle, Strings.ScanErrorText),
+                _ => (Strings.LookingTitle, Strings.LookingText),
             };
             return;
         }
@@ -43,7 +48,7 @@ public partial class DevicePanel : UserControl
         var device = snapshot.Device;
         bool hasCase = device.HasCase;
         NameText.Text = state.Connected?.Name ?? device.Name;
-        ModelText.Text = state.Connected is null ? (device.IsKnown ? "Nearby" : "Unknown model, shown as generic headphones") : device.Name;
+        ModelText.Text = state.Connected is null ? (device.IsKnown ? Strings.Nearby : Strings.UnknownModel) : device.Name;
 
         var render = DeviceImages.For(device.ModelId);
         Render.Source = render;
@@ -75,9 +80,16 @@ public partial class DevicePanel : UserControl
 
         bool connected = state.Connected is not null;
         StatusDot.SetResourceReference(System.Windows.Shapes.Shape.FillProperty, connected ? "BatteryGood" : "BatteryUnknown");
-        StatusText.Text = (connected ? "Connected to this PC" : "Not connected to this PC")
-            + (hasCase && snapshot.AnyInEar ? (snapshot.BothInEar ? " · in both ears" : " · in one ear") : string.Empty);
+        StatusText.Text = (connected ? Strings.ConnectedToPc : Strings.NotConnectedToPc)
+            + (hasCase && snapshot.AnyInEar ? " · " + (snapshot.BothInEar ? Strings.InBothEars : Strings.InOneEar) : string.Empty);
+
+        _connected = connected;
+        ConnectButton.Visibility = state.CanConnect ? Visibility.Visible : Visibility.Collapsed;
+        ConnectButton.IsEnabled = !state.Connecting;
+        ConnectButton.Content = state.Connecting ? Strings.Connecting : connected ? Strings.Disconnect : Strings.Connect;
     }
+
+    void OnConnectClick(object sender, RoutedEventArgs e) => ConnectRequested?.Invoke(this, !_connected);
 
     static PodPlacement Placement(bool inEar, bool inCase, bool reported) =>
         inEar ? PodPlacement.InEar
@@ -90,4 +102,5 @@ public partial class DevicePanel : UserControl
 }
 
 public sealed record DeviceViewState(
-    PodsSnapshot? Snapshot, PairedDeviceInfo? Connected, ScannerStatus ScannerStatus, int LowThreshold, AapState? Aap = null);
+    PodsSnapshot? Snapshot, PairedDeviceInfo? Connected, ScannerStatus ScannerStatus, int LowThreshold, AapState? Aap = null,
+    bool CanConnect = false, bool Connecting = false);

@@ -12,7 +12,7 @@
     <RootNamespace>PodPilot.App</RootNamespace>
     <ApplicationIcon>Assets\podpilot.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>0.3.0</Version>
+    <Version>0.4.0</Version>
     <Product>PodPilot</Product>
     <Description>Open-source AirPods and Beats companion for Windows</Description>
     <Copyright>PodPilot contributors</Copyright>

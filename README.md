@@ -5,7 +5,7 @@
 <h1 align="center">PodPilot</h1>
 
 <p align="center">
-  <b>Free, open-source AirPods and Beats companion for Windows.</b><br>
+  <b>Free, open-source AirPods, Beats and Galaxy Buds companion for Windows.</b><br>
   The iPhone-style battery popup, live battery levels and automatic ear detection, without paying for it.
 </p>
 
@@ -19,8 +19,12 @@
 - **Live battery levels** in the tray icon (the lowest level as a number) and its tooltip.
 - **See each earbud**: in your ear, out of your ear or in the case, updated live.
 - **Automatic ear detection**: take an AirPod out and Spotify, YouTube or any other app pauses; put it back in and playback resumes. It works with every app that shows up in the Windows media controls.
+- **Connect with one click** from the popup, or automatically when you put your earbuds in (like switching on an iPhone, off by default).
+- **Volume indicator for stem swipes**: Windows changes the volume silently when you swipe; PodPilot shows it, like the volume keys do.
 - **Low battery warnings** for each earbud and the case.
-- **Works with every AirPods and Beats model** (see below). Models released after this version still show their battery levels.
+- **Works with every AirPods and Beats model and Samsung Galaxy Buds** (see below). AirPods and Beats released after this version still show their battery levels.
+- **English and Dutch**, following your Windows language.
+- **Pops up next to your taskbar**, wherever it is: bottom, top, left or right, on any monitor.
 - **Your own device name** ("My AirPods Pro") when the headphones are paired with your PC.
 - **Updates itself**: the GitHub version installs new releases automatically (can be turned off), the Store version updates through the Store.
 - Starts with Windows, follows light and dark mode, uses the Windows 11 look.
@@ -28,15 +32,18 @@
 
 ## Supported devices
 
-| AirPods | Beats |
-| --- | --- |
-| AirPods (1st and 2nd generation) | Powerbeats Pro, Powerbeats Pro 2 |
-| AirPods (3rd generation) | Beats Fit Pro |
-| AirPods 4, AirPods 4 (ANC) | Beats Studio Buds, Studio Buds + |
-| AirPods Pro | Beats Solo Buds |
-| AirPods Pro (2nd generation, Lightning and USB-C) | Beats Flex, BeatsX, Powerbeats, Powerbeats3 |
-| AirPods Pro 3 | Beats Solo3, Solo Pro, Solo 4 |
-| AirPods Max (Lightning and USB-C) | Beats Studio3, Studio Pro |
+| AirPods | Beats | Samsung |
+| --- | --- | --- |
+| AirPods (1st and 2nd generation) | Powerbeats Pro, Powerbeats Pro 2 | Galaxy Buds, Buds+ |
+| AirPods (3rd generation) | Beats Fit Pro | Galaxy Buds Live, Buds Pro |
+| AirPods 4, AirPods 4 (ANC) | Beats Studio Buds, Studio Buds + | Galaxy Buds2, Buds2 Pro |
+| AirPods Pro | Beats Solo Buds | Galaxy Buds FE, Buds Core |
+| AirPods Pro (2nd generation, Lightning and USB-C) | Beats Flex, BeatsX, Powerbeats, Powerbeats3 | Galaxy Buds3, Buds3 Pro, Buds3 FE |
+| AirPods Pro 3 | Beats Solo3, Solo Pro, Solo 4 | |
+| AirPods Max (Lightning and USB-C) | Beats Studio3, Studio Pro | |
+
+Galaxy Buds are read over their own Bluetooth serial channel, so they need to be paired and connected to your PC.
+They show exact battery levels, the case, charging and which bud is in your ear.
 
 <p align="center">
   <img src="docs/screenshots/all-models.png" width="820" alt="PodPilot popup for every supported model family">
@@ -74,6 +81,8 @@ Because the levels come in 10% steps (for example "80 to 89%"), PodPilot shows t
 | Smoothing, device selection, events | [`PodsTracker.cs`](src/PodPilot.Core/Tracking/PodsTracker.cs) |
 | Bluetooth LE scanning | [`AdvertisementScanner.cs`](src/PodPilot.Core/Bluetooth/AdvertisementScanner.cs) |
 | Media pause/resume | [`MediaController.cs`](src/PodPilot.Core/Media/MediaController.cs) |
+| Galaxy Buds protocol | [`GalaxyBudsMessage.cs`](src/PodPilot.Core/Samsung/GalaxyBudsMessage.cs) |
+| Connect button, volume indicator | [`AudioEndpoints.cs`](src/PodPilot.App/Services/AudioEndpoints.cs) |
 
 ### Noise control: it works, but Windows makes it hard
 
@@ -144,7 +153,8 @@ dotnet publish src/PodPilot.App -c Release -r win-x64 --self-contained -p:Publis
 - [x] Automatic updates
 - [ ] Microsoft Store release
 - [ ] Sign the driver through Microsoft, so no F7 boot is needed ([help fund it](#help-unlock-noise-control-for-everyone))
-- [ ] Translations
+- [x] Translations (English, Dutch)
+- [x] Samsung Galaxy Buds
 - [ ] Installer and winget package
 
 Contributions are welcome. Please open an issue first for larger changes.
@@ -155,10 +165,11 @@ The AAP byte formats come from the public protocol notes of [LibrePods](https://
 The message format is documented by the reverse-engineering work of the community, including
 [OpenPods](https://github.com/adolfintel/OpenPods), [AirPodsDesktop](https://github.com/SpriteOvO/AirPodsDesktop),
 [LibrePods](https://github.com/kavishdevar/librepods) and [furiousMAC/continuity](https://github.com/furiousMAC/continuity).
+The Galaxy Buds message format is documented by [GalaxyBudsClient](https://github.com/timschneeb/GalaxyBudsClient) (no code was copied).
 PodPilot is inspired by MagicPods, but shares no code with it.
 The product renders in `src/PodPilot.App/Assets/Devices` are AI-generated illustrations, not Apple photos.
 
 ## License
 
-[MIT](LICENSE). AirPods, AirPods Pro, AirPods Max and Beats are trademarks of Apple Inc.
-PodPilot is an independent project and is not affiliated with or endorsed by Apple.
+[MIT](LICENSE). AirPods, AirPods Pro, AirPods Max and Beats are trademarks of Apple Inc. Galaxy Buds is a trademark of Samsung.
+PodPilot is an independent project and is not affiliated with or endorsed by Apple or Samsung.

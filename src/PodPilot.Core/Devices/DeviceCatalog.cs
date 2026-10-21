@@ -1,6 +1,9 @@
 namespace PodPilot.Core.Devices;
 
-/// <summary>Known Apple and Beats models, keyed by the model id as it appears in the advertisement.</summary>
+/// <summary>
+/// Known Apple and Beats models, keyed by the model id as it appears in the advertisement,
+/// plus Samsung Galaxy Buds under PodPilot's own ids (see <see cref="Samsung.GalaxyBudsModels.CatalogId"/>).
+/// </summary>
 public static class DeviceCatalog
 {
     static readonly Dictionary<ushort, DeviceInfo> Models = new DeviceInfo[]
@@ -32,6 +35,18 @@ public static class DeviceCatalog
         new(0x0C20, "Beats Solo Pro", FormFactor.Headphones, IsBeats: true, NoiseControl: NoiseControlSupport.Basic),
         new(0x1720, "Beats Studio Pro", FormFactor.Headphones, IsBeats: true, NoiseControl: NoiseControlSupport.Basic),
         new(0x2520, "Beats Solo 4", FormFactor.Headphones, IsBeats: true),
+
+        new(0x5300, "Galaxy Buds", FormFactor.RoundBuds, IsSamsung: true),
+        new(0x5301, "Galaxy Buds+", FormFactor.RoundBuds, IsSamsung: true),
+        new(0x5302, "Galaxy Buds Live", FormFactor.RoundBuds, IsSamsung: true),
+        new(0x5303, "Galaxy Buds Pro", FormFactor.RoundBuds, IsSamsung: true),
+        new(0x5304, "Galaxy Buds2", FormFactor.RoundBuds, IsSamsung: true),
+        new(0x5305, "Galaxy Buds2 Pro", FormFactor.RoundBuds, IsSamsung: true),
+        new(0x5306, "Galaxy Buds FE", FormFactor.RoundBuds, IsSamsung: true),
+        new(0x5307, "Galaxy Buds3", FormFactor.StemBuds, IsSamsung: true),
+        new(0x5308, "Galaxy Buds3 Pro", FormFactor.StemBuds, IsSamsung: true),
+        new(0x5309, "Galaxy Buds3 FE", FormFactor.StemBuds, IsSamsung: true),
+        new(0x530A, "Galaxy Buds Core", FormFactor.RoundBuds, IsSamsung: true),
     }.ToDictionary(d => d.ModelId);
 
     public static IReadOnlyCollection<DeviceInfo> All => Models.Values;

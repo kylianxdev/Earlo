@@ -23,13 +23,15 @@ public partial class SettingsWindow : Window
         var version = Assembly.GetExecutingAssembly().GetName().Version;
         VersionText.Text = $"PodPilot {version?.ToString(3)}";
         AutoUpdateCheck.Visibility = Updater.Supported ? Visibility.Visible : Visibility.Collapsed;
-        SetUpdateStatus(PackageInfo.IsPackaged ? "Updates are installed by the Microsoft Store."
-            : Updater.Supported ? string.Empty : "Development build: no automatic updates.");
+        SetUpdateStatus(PackageInfo.IsPackaged ? Strings.StoreUpdates
+            : Updater.Supported ? string.Empty : Strings.DevBuild);
         Panel.NoiseControlRequested += (_, mode) => NoiseControlRequested?.Invoke(this, mode);
+        Panel.ConnectRequested += (_, connect) => ConnectRequested?.Invoke(this, connect);
     }
 
     public event EventHandler? ShowPopupRequested;
     public event EventHandler<NoiseControlMode>? NoiseControlRequested;
+    public event EventHandler<bool>? ConnectRequested;
     public event EventHandler<bool>? ConversationAwarenessRequested;
     public event EventHandler<int>? AdaptiveStrengthRequested;
 
@@ -37,17 +39,17 @@ public partial class SettingsWindow : Window
     {
         Panel.Update(state);
         PairedText.Text = paired.Count == 0
-            ? "No AirPods or Beats are paired with this PC yet. Pair them in Bluetooth settings for automatic ear detection."
-            : "Paired: " + string.Join(", ", paired.Select(p => p.IsConnected ? $"{p.Name} (connected)" : p.Name));
+            ? Strings.NonePaired
+            : Strings.Paired + ": " + string.Join(", ", paired.Select(p => p.IsConnected ? $"{p.Name} ({Strings.ConnectedSuffix})" : p.Name));
 
         var aap = state.Aap is { Connected: true } a ? a : null;
         var support = state.Snapshot?.Device.NoiseControl ?? NoiseControlSupport.None;
         AapStatusText.Text = (driverPresent, aap) switch
         {
-            (false, _) => "Switching noise control needs the PodPilot AAP driver (experimental).",
-            (true, null) => "Driver installed. Waiting for your AirPods to connect...",
-            _ when support == NoiseControlSupport.None => "Connected over AAP. These headphones have no noise control.",
-            _ => "Connected over AAP. Switch modes with the buttons on the left.",
+            (false, _) => Strings.AapNeedsDriver,
+            (true, null) => Strings.AapWaiting,
+            _ when support == NoiseControlSupport.None => Strings.AapNoNoiseControl,
+            _ => Strings.AapConnected,
         };
 
         AapControls.Visibility = aap is not null && support == NoiseControlSupport.Adaptive ? Visibility.Visible : Visibility.Collapsed;
@@ -78,12 +80,10 @@ public partial class SettingsWindow : Window
         DriverPanel.Visibility = PackageInfo.IsPackaged || (package == DriverPackageKind.None && !installed)
             ? Visibility.Collapsed : Visibility.Visible;
         DriverButton.IsEnabled = !busy;
-        DriverButton.Content = busy ? "Working..." : installed ? "Remove noise control driver" : "Install noise control driver";
+        DriverButton.Content = busy ? Strings.Working : installed ? Strings.RemoveDriver : Strings.InstallDriver;
         DriverNote.Text = installed
-            ? "Installed. Windows asks for administrator permission to remove it."
-            : package == DriverPackageKind.MicrosoftSigned
-                ? "Windows asks for administrator permission once. Secure Boot stays on."
-                : "Experimental test build: the driver only loads after starting Windows with \"Disable driver signature enforcement\" (Shift + Restart > Troubleshoot > Advanced options > Startup Settings > F7).";
+            ? Strings.DriverInstalledNote
+            : package == DriverPackageKind.MicrosoftSigned ? Strings.DriverSignedNote : Strings.DriverTestNote;
     }
 
     void OnDriverClick(object sender, RoutedEventArgs e) => DriverButtonClicked?.Invoke(this, EventArgs.Empty);

@@ -51,9 +51,9 @@ public partial class BatteryBar : UserControl
 
             (string text, string brush) = value switch
             {
-                PodPlacement.InEar => ("In ear", "BatteryGood"),
-                PodPlacement.OutOfEar => ("Out of ear", "TextSecondary"),
-                PodPlacement.InCase => ("In case", "Accent"),
+                PodPlacement.InEar => (Strings.InEar, "BatteryGood"),
+                PodPlacement.OutOfEar => (Strings.OutOfEar, "TextSecondary"),
+                PodPlacement.InCase => (Strings.InCase, "Accent"),
                 _ => (string.Empty, "TextSecondary"),
             };
             StatusPanel.Visibility = value == PodPlacement.Unknown ? Visibility.Collapsed : Visibility.Visible;
@@ -81,7 +81,7 @@ public partial class BatteryBar : UserControl
 
         // A remembered level the device is not reporting right now: show it, but faded.
         Fill.Opacity = PercentText.Opacity = _state.Stale ? 0.45 : 1.0;
-        ToolTip = _state.Stale ? "Last known level. The case reports its battery when an AirPod is in it." : null;
+        ToolTip = _state.Stale ? Strings.StaleBattery : null;
 
         double target = Math.Max(Track.ActualWidth * (percent ?? 0) / 100.0, percent is null ? 0 : 8);
         if (animate && Track.ActualWidth > 0)

@@ -16,13 +16,13 @@ public sealed class LowBatteryNotifier(AppSettings settings, Action<string, stri
 
         if (snapshot.Device.HasSingleBattery)
         {
-            Check("Battery", snapshot.Single, name, $"{name} battery is low");
+            Check("Battery", snapshot.Single, name, Strings.LowSingle(name));
             return;
         }
 
-        Check("Left", snapshot.Left, name, "Left earbud battery is low");
-        Check("Right", snapshot.Right, name, "Right earbud battery is low");
-        Check("Case", snapshot.Case, name, "Charging case battery is low");
+        Check("Left", snapshot.Left, name, Strings.LowLeft);
+        Check("Right", snapshot.Right, name, Strings.LowRight);
+        Check("Case", snapshot.Case, name, Strings.LowCase);
     }
 
     void Check(string part, BatteryState state, string name, string title)
@@ -37,6 +37,6 @@ public sealed class LowBatteryNotifier(AppSettings settings, Action<string, stri
         }
 
         if (percent <= settings.LowBatteryThreshold && _warned.Add(part))
-            notify(title, $"{name}: {percent}% remaining.");
+            notify(title, Strings.Remaining(name, percent));
     }
 }

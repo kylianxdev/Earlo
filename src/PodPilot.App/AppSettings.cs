@@ -29,6 +29,8 @@ public sealed class AppSettings : INotifyPropertyChanged
     bool _volumeSwipe = true;
     bool _firstRunDone;
     bool _autoUpdate = true;
+    bool _autoConnect;
+    bool _volumeOsd = true;
 
     public bool StartWithWindows { get => _startWithWindows; set => Set(ref _startWithWindows, value); }
     public bool PopupOnLidOpen { get => _popupOnLidOpen; set => Set(ref _popupOnLidOpen, value); }
@@ -55,6 +57,12 @@ public sealed class AppSettings : INotifyPropertyChanged
 
     /// <summary>Install new GitHub releases automatically (the Store version updates through the Store).</summary>
     public bool AutoUpdate { get => _autoUpdate; set => Set(ref _autoUpdate, value); }
+
+    /// <summary>Connect the earbuds to this PC when they go in your ears (like automatic switching on Apple devices).</summary>
+    public bool AutoConnect { get => _autoConnect; set => Set(ref _autoConnect, value); }
+
+    /// <summary>Show a volume indicator when the volume changes from the earbuds (stem swipe), which Windows does not show.</summary>
+    public bool VolumeOsd { get => _volumeOsd; set => Set(ref _volumeOsd, value); }
 
     [JsonIgnore]
     public bool Persist { get; set; } = true;
