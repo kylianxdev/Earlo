@@ -144,7 +144,7 @@ With that signature the driver installs with one click, Secure Boot stays on and
 and every purchase goes towards the signing certificate. PodPilot stays free and open source on GitHub, so it is your choice.
 
 <a id="microsoft-store"></a>
-> **Microsoft Store:** coming soon. The link will be here as soon as the listing is live.
+> **Microsoft Store:** in review at Microsoft (submitted October 2026). The link will be here as soon as the listing is live.
 
 | Part | File |
 | --- | --- |
@@ -185,7 +185,7 @@ dotnet publish src/PodPilot.App -c Release -r win-x64 --self-contained -p:Publis
 - [x] AAP protocol layer: noise control, Conversation Awareness, exact battery levels
 - [x] AAP driver working on real AirPods
 - [x] Automatic updates
-- [ ] Microsoft Store release (submitted)
+- [ ] Microsoft Store release (in certification)
 - [ ] Sign the driver through Microsoft, so no F7 boot is needed ([help fund it](#help-unlock-noise-control-for-everyone))
 - [x] Translations (English, Dutch)
 - [x] Samsung Galaxy Buds
