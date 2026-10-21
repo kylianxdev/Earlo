@@ -1,34 +1,64 @@
 <p align="center">
-  <img src="docs/icon.png" width="96" alt="PodPilot icon">
+  <img src="docs/icon.png" width="112" alt="PodPilot icon">
 </p>
 
 <h1 align="center">PodPilot</h1>
 
 <p align="center">
-  <b>Free, open-source AirPods, Beats and Galaxy Buds companion for Windows.</b><br>
-  The iPhone-style battery popup, live battery levels and automatic ear detection, without paying for it.
+  <b>Your AirPods, Beats and Galaxy Buds, finally at home on Windows.</b><br>
+  The iPhone battery popup, live battery levels, automatic ear detection and one-click connect.<br>
+  Free, open source, no account, no telemetry.
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/popup-ear-detection.png" width="380" alt="PodPilot popup showing AirPods Pro battery levels and which earbud is in your ear">
+  <a href="../../releases/latest"><img src="https://img.shields.io/github/v/release/kylianxdev/PodPilot?label=download&color=34c759" alt="Latest release"></a>
+  <a href="../../releases"><img src="https://img.shields.io/github/downloads/kylianxdev/PodPilot/total?color=0a84ff" alt="Downloads"></a>
+  <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-1c1c1e" alt="Windows 10 and 11">
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/kylianxdev/PodPilot?color=6e6e73" alt="MIT license"></a>
 </p>
 
-## Features
+<p align="center">
+  <img src="docs/screenshots/popup-ear-detection.png" width="300" alt="PodPilot popup showing AirPods Pro battery levels and which earbud is in your ear">
+  <img src="docs/screenshots/popup-noise-control.png" width="300" alt="Popup with noise control buttons">
+  <img src="docs/screenshots/popup-galaxy-buds.png" width="300" alt="Popup for Samsung Galaxy Buds2 Pro">
+</p>
 
-- **Popup when you open the case**, like on an iPhone: model, left and right earbud, case, charging state.
-- **Live battery levels** in the tray icon (the lowest level as a number) and its tooltip.
-- **See each earbud**: in your ear, out of your ear or in the case, updated live.
-- **Automatic ear detection**: take an AirPod out and Spotify, YouTube or any other app pauses; put it back in and playback resumes. It works with every app that shows up in the Windows media controls.
-- **Connect with one click** from the popup, or automatically when you put your earbuds in (like switching on an iPhone, off by default).
-- **Volume indicator for stem swipes**: Windows changes the volume silently when you swipe; PodPilot shows it, like the volume keys do.
-- **Low battery warnings** for each earbud and the case.
-- **Works with every AirPods and Beats model and Samsung Galaxy Buds** (see below). AirPods and Beats released after this version still show their battery levels.
-- **English and Dutch**, following your Windows language.
-- **Pops up next to your taskbar**, wherever it is: bottom, top, left or right, on any monitor.
-- **Your own device name** ("My AirPods Pro") when the headphones are paired with your PC.
-- **Updates itself**: the GitHub version installs new releases automatically (can be turned off), the Store version updates through the Store.
-- Starts with Windows, follows light and dark mode, uses the Windows 11 look.
-- **No drivers needed, no account, no telemetry.** It only listens to Bluetooth LE broadcasts. The only internet traffic is the update check against GitHub ([privacy policy](PRIVACY.md)).
+## Why PodPilot
+
+Windows treats your AirPods like any other Bluetooth headset: no battery levels, no popup, no ear detection.
+PodPilot brings back what you are used to from an iPhone, and adds the things Windows forgot.
+
+### See everything at a glance
+
+- **Popup when you open the case**, just like on an iPhone: your earbuds, the case, charging state, in a clean Windows 11 card.
+- **Every earbud, live**: in your ear, out of your ear or in the case, with its own battery level.
+- **Battery in the tray**: hover the icon for every level, or turn on the small battery bar on the icon itself.
+- **Low battery warnings** for each earbud and the case, before your music cuts out.
+
+### It just works
+
+- **Automatic ear detection**: take an earbud out and Spotify, YouTube, Netflix or any other app pauses. Put it back in and it plays on.
+- **Connect in one click** from the popup, or let your earbuds switch to the PC by themselves when you put them in, like on an iPhone.
+- **Disconnect in one click**, so your phone can have them back.
+- **A volume indicator for stem swipes**: Windows changes the volume silently when you swipe; PodPilot shows it, like the volume keys do.
+- **Noise control** (Off, Noise Cancellation, Transparency, Adaptive) and Conversation Awareness with the [experimental driver](#noise-control-it-works-but-windows-makes-it-hard).
+
+### Made for Windows
+
+- **Lives in the tray**: starts quietly with Windows, click the icon to open it.
+- **Pops up next to your taskbar**, wherever it is: bottom, top, left or right, on any monitor and any DPI.
+- **English and Dutch**, following your Windows language. Light and dark mode, the Windows 11 look.
+- **Updates itself**: the GitHub version installs new releases automatically (verified against their checksums), the Store version updates through the Store.
+- **Private by design**: no account, no telemetry, no cloud. The only internet traffic is the update check against GitHub ([privacy policy](PRIVACY.md)).
+- **One file**: a single `PodPilot.exe`, no installer, no background services.
+
+<p align="center">
+  <img src="docs/screenshots/settings.png" width="760" alt="PodPilot settings window">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/volume.png" width="320" alt="Volume indicator shown when you swipe on the stem">
+</p>
 
 ## Supported devices
 
@@ -42,29 +72,32 @@
 | AirPods Pro 3 | Beats Solo3, Solo Pro, Solo 4 | |
 | AirPods Max (Lightning and USB-C) | Beats Studio3, Studio Pro | |
 
-Galaxy Buds are read over their own Bluetooth serial channel, so they need to be paired and connected to your PC.
-They show exact battery levels, the case, charging and which bud is in your ear.
-
 <p align="center">
-  <img src="docs/screenshots/all-models.png" width="820" alt="PodPilot popup for every supported model family">
+  <img src="docs/screenshots/all-models.png" width="860" alt="PodPilot popup for every supported model family">
 </p>
 
-A model that is not in the list is shown as generic headphones, with working battery levels.
-If that happens, please [open an issue](../../issues) with a diagnostics log (see below) so it can be added.
+AirPods and Beats released after this version still show their battery levels, as generic headphones.
+If that happens, please [open an issue](../../issues) with a diagnostics log (see below) so the model can be added.
+Galaxy Buds are read over their own Bluetooth channel, so they need to be paired and connected to your PC;
+in return they report exact 1% battery levels.
 
 ## Install
 
+**Microsoft Store** (automatic updates, supports development): see [below](#microsoft-store).
+
+**GitHub** (free):
+
 1. Download from the [latest release](../../releases/latest):
-   - `PodPilot-win-x64.zip`: standalone, runs on any PC (about 32 MB).
+   - `PodPilot-win-x64.zip`: standalone, runs on any PC.
    - `PodPilot-win-x64-small.zip`: about 9 MB, but needs the [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) (Windows offers to install it on first start).
    - `win-arm64` versions for ARM PCs.
 2. Unzip it anywhere, for example your Documents folder. It is a single `PodPilot.exe`.
-3. Run `PodPilot.exe`. It sits in the notification area (next to the clock).
+3. Run `PodPilot.exe`. It lives in the notification area next to the clock (under the `^` arrow); click the icon to open it.
 
 Requirements: Windows 10 version 2004 or newer, or Windows 11, with a Bluetooth 4.0 (LE) adapter.
 
-Pair your AirPods with Windows as usual (Settings > Bluetooth & devices > Add device, then hold the button on the case).
-Pairing is optional for battery levels, but needed for your device name and for ear detection.
+Pair your earbuds with Windows as usual (Settings > Bluetooth & devices > Add device, then hold the button on the case).
+Pairing is optional for AirPods battery levels, but needed for your device name, ear detection, connecting and Galaxy Buds.
 
 ## How it works
 
@@ -128,6 +161,7 @@ and every purchase goes towards the signing certificate. PodPilot stays free and
 | `--demo` | Feed fake AirPods data, to try the app without headphones. |
 | `--log <file>` | Write every received AirPods message to a text file. Attach this to bug reports. |
 | `--render-preview <folder>` | Render the popup for several models to PNG files. |
+| `--lang en` / `--lang nl` | Use English or Dutch instead of the Windows language. |
 
 ## Building from source
 
@@ -151,7 +185,7 @@ dotnet publish src/PodPilot.App -c Release -r win-x64 --self-contained -p:Publis
 - [x] AAP protocol layer: noise control, Conversation Awareness, exact battery levels
 - [x] AAP driver working on real AirPods
 - [x] Automatic updates
-- [ ] Microsoft Store release
+- [ ] Microsoft Store release (submitted)
 - [ ] Sign the driver through Microsoft, so no F7 boot is needed ([help fund it](#help-unlock-noise-control-for-everyone))
 - [x] Translations (English, Dutch)
 - [x] Samsung Galaxy Buds

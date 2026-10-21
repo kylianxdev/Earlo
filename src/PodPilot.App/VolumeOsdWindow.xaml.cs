@@ -30,10 +30,7 @@ public partial class VolumeOsdWindow : Window
 
     public void ShowLevel(float level, bool muted)
     {
-        int percent = (int)Math.Round(level * 100);
-        LevelText.Text = muted ? "0" : percent.ToString();
-        SpeakerIcon.Text = muted || percent == 0 ? "" : percent < 34 ? "" : percent < 67 ? "" : "";
-        Fill.Width = 140 * (muted ? 0 : Math.Clamp(level, 0, 1));
+        SetLevel(level, muted);
 
         BeginAnimation(OpacityProperty, null);
         Opacity = 1;
@@ -44,6 +41,14 @@ public partial class VolumeOsdWindow : Window
         }
         _hideTimer.Stop();
         _hideTimer.Start();
+    }
+
+    public void SetLevel(float level, bool muted)
+    {
+        int percent = (int)Math.Round(level * 100);
+        LevelText.Text = muted ? "0" : percent.ToString();
+        SpeakerIcon.Text = muted || percent == 0 ? "" : percent < 34 ? "" : percent < 67 ? "" : "";
+        Fill.Width = 140 * (muted ? 0 : Math.Clamp(level, 0, 1));
     }
 
     void FadeOut()

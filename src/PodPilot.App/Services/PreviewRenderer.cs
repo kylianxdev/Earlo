@@ -63,6 +63,21 @@ public static class PreviewRenderer
         foreach (var (percent, charging, light) in new[] { (85, false, false), (15, false, false), (60, true, false) })
             SavePng(TrayIcon.RenderTrayBitmap(percent, charging, light),
                 Path.Combine(folder, $"tray-{percent}{(charging ? "-charging" : "")}{(light ? "-light" : "")}.png"));
+        var osd = new VolumeOsdWindow { Left = -10000, Top = -10000 };
+        osd.SetLevel(0.62f, false);
+        osd.Show();
+        osd.UpdateLayout();
+        Save((FrameworkElement)osd.Content, Path.Combine(folder, "volume.png"));
+        osd.Close();
+
+        var settings = new SettingsWindow(new AppSettings { Persist = false }) { Left = -10000, Top = -10000, Height = 820 };
+        settings.Show();
+        settings.Update(new DeviceViewState(DemoMode.Snapshot(), connected, ScannerStatus.Scanning, 20, aap, CanConnect: true),
+            [connected], driverPresent: true);
+        settings.UpdateLayout();
+        Save((FrameworkElement)settings.Content, Path.Combine(folder, "settings.png"), background: Brushes.White);
+        settings.Close();
+
         RenderPopup(Path.Combine(folder, "popup-searching.png"),
             new DeviceViewState(null, null, ScannerStatus.Scanning, 20));
     }
@@ -85,7 +100,7 @@ public static class PreviewRenderer
         encoder.Save(stream);
     }
 
-    static void Save(FrameworkElement element, string file)
+    static void Save(FrameworkElement element, string file, Brush? background = null)
     {
         const double scale = 2;
         // The element renders at its offset inside the window, so include the margin on both sides.
@@ -93,6 +108,13 @@ public static class PreviewRenderer
         double height = element.ActualHeight + element.Margin.Top + element.Margin.Bottom;
         var bitmap = new RenderTargetBitmap(
             (int)(width * scale), (int)(height * scale), 96 * scale, 96 * scale, PixelFormats.Pbgra32);
+        if (background is not null)
+        {
+            var fill = new DrawingVisual();
+            using (var dc = fill.RenderOpen())
+                dc.DrawRectangle(background, null, new Rect(0, 0, width, height));
+            bitmap.Render(fill);
+        }
         bitmap.Render(element);
         var encoder = new PngBitmapEncoder();
         encoder.Frames.Add(BitmapFrame.Create(bitmap));

@@ -8,7 +8,14 @@ namespace PodPilot.App;
 /// </summary>
 public static class Strings
 {
-    public static bool Dutch { get; } = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "nl";
+    public static bool Dutch { get; private set; } = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "nl";
+
+    /// <summary>Overrides the Windows language ("en" or "nl"), for <c>--lang</c>. Call before any window is created.</summary>
+    public static void UseLanguage(string? code)
+    {
+        if (code is "en" or "nl")
+            Dutch = code == "nl";
+    }
 
     static string T(string en, string nl) => Dutch ? nl : en;
 

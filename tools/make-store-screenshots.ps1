@@ -12,7 +12,7 @@ function New-Shot([string]$image, [string]$caption, [string]$file) {
     $g.SmoothingMode = 'AntiAlias'
     $g.InterpolationMode = 'HighQualityBicubic'
     $g.TextRenderingHint = 'AntiAliasGridFit'
-    $bg = New-Object System.Drawing.Drawing2D.LinearGradientBrush (New-Object System.Drawing.Point 0, 0), (New-Object System.Drawing.Point 1920, 1080), ([System.Drawing.Color]::FromArgb(255, 18, 64, 160)), ([System.Drawing.Color]::FromArgb(255, 88, 40, 170))
+    $bg = New-Object System.Drawing.Drawing2D.LinearGradientBrush (New-Object System.Drawing.Point 0, 0), (New-Object System.Drawing.Point 1920, 1080), ([System.Drawing.Color]::FromArgb(255, 44, 45, 50)), ([System.Drawing.Color]::FromArgb(255, 12, 12, 14))
     $g.FillRectangle($bg, 0, 0, 1920, 1080)
 
     $font = New-Object System.Drawing.Font 'Segoe UI Semibold', 54
@@ -31,5 +31,7 @@ function New-Shot([string]$image, [string]$caption, [string]$file) {
 
 New-Shot 'popup-airpods-pro.png' 'The iPhone battery popup, on Windows' '1-popup.png'
 New-Shot 'popup-ear-detection.png' 'See every earbud, live' '2-ear-detection.png'
-New-Shot 'all-models.png' 'Works with every AirPods and Beats model' '3-all-models.png'
+New-Shot 'settings.png' 'Connect in one click, pause when you take them out' '3-settings.png'
+New-Shot 'popup-galaxy-buds.png' 'Galaxy Buds too' '4-galaxy-buds.png'
+New-Shot 'all-models.png' 'AirPods, Beats and Galaxy Buds' '5-all-models.png'
 Write-Host "Wrote screenshots to $out"

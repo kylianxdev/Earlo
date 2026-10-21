@@ -58,6 +58,10 @@ public partial class App : Application
             ex.Handled = true;
         };
 
+        int langIndex = Array.IndexOf(e.Args, "--lang");
+        if (langIndex >= 0)
+            Strings.UseLanguage(e.Args.ElementAtOrDefault(langIndex + 1));
+
         // Elevated helper started by DriverInstaller: do the job and exit, no tray app.
         if (DriverInstaller.IsElevatedCommand(e.Args.FirstOrDefault()))
         {
