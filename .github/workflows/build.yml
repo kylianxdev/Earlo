@@ -21,7 +21,7 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Test
-        run: dotnet test tests/PodPilot.Core.Tests -c Release
+        run: dotnet test tests/Earlo.Core.Tests -c Release
 
       - uses: actions/download-artifact@v4
         with:
@@ -29,19 +29,19 @@ jobs:
           path: drivers
           merge-multiple: true
 
-      # The GitHub builds embed the driver so PodPilot can install it itself.
+      # The GitHub builds embed the driver so Earlo can install it itself.
       # A Microsoft-signed package in driver/signed/<arch> wins over the CI test-signed build.
       - name: Embed driver package
         shell: pwsh
         run: |
           foreach ($arch in 'x64', 'arm64') {
-            $target = "src/PodPilot.App/DriverPackage/$arch"
+            $target = "src/Earlo.App/DriverPackage/$arch"
             New-Item -ItemType Directory -Force $target | Out-Null
             if (Test-Path "driver/signed/$arch/PodPilotAap.sys") {
               Copy-Item "driver/signed/$arch/*" $target
               Set-Content "$target/signing.txt" 'microsoft'
             } else {
-              Expand-Archive "drivers/PodPilotAap-driver-$arch.zip" "drivers/$arch" -Force
+              Expand-Archive "drivers/Earlo-driver-$arch.zip" "drivers/$arch" -Force
               Copy-Item "drivers/$arch/PodPilotAap.sys", "drivers/$arch/PodPilotAap.inf", "drivers/$arch/podpilotaap.cat", "drivers/$arch/PodPilotAap.cer" $target
               Set-Content "$target/signing.txt" 'test'
             }
@@ -52,38 +52,63 @@ jobs:
         shell: pwsh
         run: |
           foreach ($rid in 'win-x64', 'win-arm64') {
-            # Standalone: runs anywhere, trimmed and compressed (see PodPilot.App.csproj).
-            dotnet publish src/PodPilot.App -c Release -r $rid --self-contained -p:PodPilotFlavor=standalone `
+            # Standalone: runs anywhere, trimmed and compressed (see Earlo.App.csproj).
+            dotnet publish src/Earlo.App -c Release -r $rid --self-contained -p:EarloFlavor=standalone `
               -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o "publish/$rid"
-            Compress-Archive -Path "publish/$rid/PodPilot.exe" -DestinationPath "PodPilot-$rid.zip" -Force
+            Compress-Archive -Path "publish/$rid/Earlo.exe" -DestinationPath "Earlo-$rid.zip" -Force
 
             # Small: needs the .NET 10 Desktop Runtime installed.
-            dotnet publish src/PodPilot.App -c Release -r $rid --self-contained false -p:PodPilotFlavor=small `
+            dotnet publish src/Earlo.App -c Release -r $rid --self-contained false -p:EarloFlavor=small `
               -p:PublishSingleFile=true -o "publish/$rid-small"
-            Compress-Archive -Path "publish/$rid-small/PodPilot.exe" -DestinationPath "PodPilot-$rid-small.zip" -Force
+            Compress-Archive -Path "publish/$rid-small/Earlo.exe" -DestinationPath "Earlo-$rid-small.zip" -Force
+
+            # PodPilot 0.4 and older update themselves from PodPilot-<rid>[-small].zip with PodPilot.exe
+            # inside. Publish the same Earlo builds under those names so they move over to Earlo.
+            foreach ($suffix in '', '-small') {
+              $legacy = New-Item -ItemType Directory -Force "legacy/$rid$suffix"
+              Copy-Item "publish/$rid$suffix/Earlo.exe" (Join-Path $legacy 'PodPilot.exe')
+              Compress-Archive -Path (Join-Path $legacy 'PodPilot.exe') -DestinationPath "PodPilot-$rid$suffix.zip" -Force
+            }
 
             # Microsoft Store: no driver, no self-update.
             $arch = $rid -replace 'win-', ''
-            dotnet publish src/PodPilot.App -c Release -r $rid --self-contained -p:PodPilotFlavor=store `
+            dotnet publish src/Earlo.App -c Release -r $rid --self-contained -p:EarloFlavor=store `
               -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o "publish/store-$arch"
           }
-          Get-ChildItem PodPilot-*.zip | ForEach-Object { "{0}: {1:N1} MB" -f $_.Name, ($_.Length / 1MB) }
+          Get-ChildItem Earlo-*.zip, PodPilot-*.zip | ForEach-Object { "{0}: {1:N1} MB" -f $_.Name, ($_.Length / 1MB) }
+
+      # The app renders its own popups, settings and notices for the README (docs/screenshots).
+      - name: Render screenshots
+        continue-on-error: true
+        timeout-minutes: 5
+        shell: pwsh
+        run: |
+          Start-Process publish/win-x64/Earlo.exe -ArgumentList '--render-preview', "$PWD\screenshots" -Wait
+          Get-ChildItem screenshots | ForEach-Object { "{0} ({1:N0} KB)" -f $_.Name, ($_.Length / 1KB) }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: screenshots
+          if-no-files-found: ignore
 
       - name: Store package
         shell: pwsh
         run: |
-          $version = ([xml](Get-Content src/PodPilot.App/PodPilot.App.csproj)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
+          $version = ([xml](Get-Content src/Earlo.App/Earlo.App.csproj)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
           ./tools/make-msix.ps1 -Version $version
 
       - uses: actions/upload-artifact@v4
         with:
           name: app
-          path: PodPilot-*.zip
+          path: |
+            Earlo-*.zip
+            PodPilot-*.zip
 
       - uses: actions/upload-artifact@v4
         with:
           name: store
-          path: PodPilot-store.msixbundle
+          path: Earlo-store.msixbundle
 
   driver:
     runs-on: windows-2022
@@ -118,12 +143,12 @@ jobs:
           $files | Where-Object Extension -eq '.cer' | Select-Object -First 1 | Copy-Item -Destination $out
           Copy-Item driver/install-driver.ps1, driver/uninstall-driver.ps1, driver/README.md $out
           $arch = $platform.ToLower()
-          Compress-Archive -Path "$out/*" -DestinationPath "PodPilotAap-driver-$arch.zip" -Force
+          Compress-Archive -Path "$out/*" -DestinationPath "Earlo-driver-$arch.zip" -Force
 
       - uses: actions/upload-artifact@v4
         with:
           name: driver-${{ matrix.platform }}
-          path: PodPilotAap-driver-*.zip
+          path: Earlo-driver-*.zip
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
@@ -137,5 +162,6 @@ jobs:
       # Only the zips go on GitHub; the Store bundle is uploaded to Partner Center.
       - uses: softprops/action-gh-release@v2
         with:
+          name: Earlo ${{ github.ref_name }}
           files: '*.zip'
           generate_release_notes: true

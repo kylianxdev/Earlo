@@ -1,10 +1,10 @@
 /*
- * PodPilot AAP bridge driver.
+ * Earlo AAP bridge driver.
  *
  * A KMDF Bluetooth profile driver that loads on the AirPods' vendor service (BTHENUM) and
  * opens Apple's AAP channel (L2CAP PSM 0x1001), which Windows does not expose to user mode.
  * It only moves raw packets between the channel and user mode; all protocol logic lives in
- * PodPilot (src/PodPilot.Core/Aap).
+ * Earlo (src/Earlo.Core/Aap).
  *
  * Structure follows Microsoft's Bluetooth echo profile driver sample (bthecho).
  */

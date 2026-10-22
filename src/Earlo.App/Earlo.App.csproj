@@ -1,0 +1,78 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyName>Earlo</AssemblyName>
+    <RootNamespace>Earlo.App</RootNamespace>
+    <ApplicationIcon>Assets\earlo.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Version>0.5.0</Version>
+    <Product>Earlo</Product>
+    <Description>Open-source AirPods and Beats companion for Windows</Description>
+    <Copyright>Earlo contributors</Copyright>
+    <!-- WPF0001: ThemeMode (Fluent) is marked experimental. -->
+    <NoWarn>$(NoWarn);WPF0001</NoWarn>
+    <!-- Only ship English framework resources instead of every language. -->
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <!--
+    Standalone build (dotnet publish -r win-x64 - -self-contained): keep it small.
+    Partial trimming only trims libraries marked trimmable (the big Windows API projection, the BCL),
+    and leaves WPF and Earlo itself untouched, which WPF needs for XAML.
+  -->
+  <PropertyGroup Condition="'$(SelfContained)' == 'true'">
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>partial</TrimMode>
+    <_SuppressWpfTrimError>true</_SuppressWpfTrimError>
+    <!-- WPF uses classic COM interop (drag and drop, clipboard), which trimming disables by default. -->
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <DebuggerSupport>false</DebuggerSupport>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+  </PropertyGroup>
+
+  <!-- WPF loads this at shutdown through reflection, so the trimmer cannot see it is used. -->
+  <ItemGroup Condition="'$(SelfContained)' == 'true'">
+    <TrimmerRootAssembly Include="System.Diagnostics.Tracing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\earlo.ico" />
+    <Resource Include="Assets\Devices\*.png" />
+  </ItemGroup>
+
+  <!--
+    The AAP driver package is embedded in the exe so Earlo can install it itself.
+    CI fills DriverPackage\<arch>\ (PodPilotAap.sys/.inf/.cat, signing.txt and for test builds
+    PodPilotAap.cer), preferring the Microsoft-signed package in driver\signed\<arch>\ when present.
+  -->
+  <PropertyGroup>
+    <DriverArch Condition="'$(RuntimeIdentifier)' == 'win-x64'">x64</DriverArch>
+    <DriverArch Condition="'$(RuntimeIdentifier)' == 'win-arm64'">arm64</DriverArch>
+  </PropertyGroup>
+  <!-- Build flavour (standalone, small, store; dev locally). Decides auto-update and driver handling. -->
+  <PropertyGroup>
+    <EarloFlavor Condition="'$(EarloFlavor)' == ''">dev</EarloFlavor>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyMetadata Include="EarloFlavor" Value="$(EarloFlavor)" />
+  </ItemGroup>
+
+  <!-- Store builds never carry the driver. -->
+  <ItemGroup Condition="'$(DriverArch)' != '' and '$(EarloFlavor)' != 'store'">
+    <EmbeddedResource Include="DriverPackage\$(DriverArch)\*" LogicalName="driver/%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Earlo.Core\Earlo.Core.csproj" />
+  </ItemGroup>
+
+</Project>

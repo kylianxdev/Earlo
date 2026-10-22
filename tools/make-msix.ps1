@@ -1,14 +1,14 @@
 # Builds the Microsoft Store package (an .msixbundle with x64 and arm64) from Store publish folders.
 #
-#   dotnet publish src/PodPilot.App -c Release -r win-x64 --self-contained -p:PodPilotFlavor=store -o publish/store-x64
-#   dotnet publish src/PodPilot.App -c Release -r win-arm64 --self-contained -p:PodPilotFlavor=store -o publish/store-arm64
+#   dotnet publish src/Earlo.App -c Release -r win-x64 --self-contained -p:EarloFlavor=store -o publish/store-x64
+#   dotnet publish src/Earlo.App -c Release -r win-arm64 --self-contained -p:EarloFlavor=store -o publish/store-arm64
 #   powershell -File tools/make-msix.ps1 -Version 0.3.0
 #
 # The bundle is unsigned: the Store signs it after upload. Needs MakeAppx/MakePri from the Windows SDK.
 param(
     [Parameter(Mandatory)] [string] $Version,
     [string] $PublishRoot = 'publish',
-    [string] $Output = 'PodPilot-store.msixbundle'
+    [string] $Output = 'Earlo-store.msixbundle'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -32,7 +32,7 @@ $packages = New-Item -ItemType Directory -Force (Join-Path $work 'packages')
 
 foreach ($arch in 'x64', 'arm64') {
     $publish = Join-Path $PublishRoot "store-$arch"
-    if (-not (Test-Path (Join-Path $publish 'PodPilot.exe'))) { throw "Missing $publish\PodPilot.exe" }
+    if (-not (Test-Path (Join-Path $publish 'Earlo.exe'))) { throw "Missing $publish\Earlo.exe" }
 
     $stage = New-Item -ItemType Directory -Force (Join-Path $work "stage-$arch")
     Copy-Item (Join-Path $publish '*') $stage -Recurse
@@ -52,7 +52,7 @@ foreach ($arch in 'x64', 'arm64') {
     & $makePri new /pr $stage /cf $priConfig /mn (Join-Path $stage 'AppxManifest.xml') /of (Join-Path $stage 'resources.pri') /o | Out-Null
     if ($LASTEXITCODE -ne 0) { throw "makepri failed for $arch" }
 
-    & $makeAppx pack /d $stage /p (Join-Path $packages "PodPilot-$arch.msix") /o | Out-Null
+    & $makeAppx pack /d $stage /p (Join-Path $packages "Earlo-$arch.msix") /o | Out-Null
     if ($LASTEXITCODE -ne 0) { throw "makeappx pack failed for $arch" }
 }
 

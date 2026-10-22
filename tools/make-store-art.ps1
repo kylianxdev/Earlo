@@ -19,7 +19,7 @@ function New-Art([int]$width, [int]$height, [string]$file, [bool]$withName) {
         $font = New-Object System.Drawing.Font 'Segoe UI Semibold', ([float]($width * 0.11)), ([System.Drawing.FontStyle]::Regular), ([System.Drawing.GraphicsUnit]::Pixel)
         $format = New-Object System.Drawing.StringFormat
         $format.Alignment = 'Center'
-        $g.DrawString('PodPilot', $font, [System.Drawing.Brushes]::White, (New-Object System.Drawing.RectangleF 0, ($top + $size + $height * 0.03), $width, ($height * 0.2)), $format)
+        $g.DrawString('Earlo', $font, [System.Drawing.Brushes]::White, (New-Object System.Drawing.RectangleF 0, ($top + $size + $height * 0.03), $width, ($height * 0.2)), $format)
     }
     $g.Dispose()
     $bmp.Save((Join-Path $out $file), [System.Drawing.Imaging.ImageFormat]::Png)

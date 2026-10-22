@@ -1,14 +1,14 @@
-# PodPilot AAP bridge driver
+# Earlo AAP bridge driver
 
 Windows does not let normal apps open Bluetooth L2CAP channels. AirPods use one (PSM `0x1001`)
 for Apple's accessory protocol (AAP): noise control, Conversation Awareness, exact battery levels and more.
 
 This KMDF driver loads on the AirPods' vendor Bluetooth service
-`{4715650b-5e9d-4ac2-b898-a4fc0aa5df78}`, opens that channel and passes raw packets to PodPilot.
-All protocol logic lives in the app ([`src/PodPilot.Core/Aap`](../src/PodPilot.Core/Aap)).
+`{4715650b-5e9d-4ac2-b898-a4fc0aa5df78}`, opens that channel and passes raw packets to Earlo.
+All protocol logic lives in the app ([`src/Earlo.Core/Aap`](../src/Earlo.Core/Aap)).
 
 > **Status: works on real AirPods.** It is not signed by Microsoft yet, so it only loads after the F7 boot option (see below).
-> Problems? Open an issue with a `--log` file from PodPilot.
+> Problems? Open an issue with a `--log` file from Earlo.
 
 ## Interface
 
@@ -30,14 +30,14 @@ Test-signed drivers only load with Windows test signing enabled, which lowers se
 (it can conflict with Secure Boot and game anti-cheat).
 
 1. Pair your AirPods with Windows.
-2. Download `PodPilotAap-driver-x64.zip` from the GitHub Actions artifacts or a release, and unzip it.
+2. Download `Earlo-driver-x64.zip` from the GitHub Actions artifacts or a release, and unzip it.
 3. Allow the test-signed driver, either way:
    - **One boot only, Secure Boot stays on:** Shift + Restart > Troubleshoot > Advanced options > Startup Settings > Restart > press **F7**
      ("Disable driver signature enforcement"). After the next normal restart everything is back to normal.
    - **Permanent:** `bcdedit /set testsigning on` and restart. With Secure Boot on, Windows refuses this
      ("protected by Secure Boot policy"); you would have to turn Secure Boot off in UEFI, which breaks some game anti-cheat (for example Riot Vanguard).
-4. Easiest: in PodPilot, open Settings > Noise control > **Install noise control driver**. Or, in an administrator PowerShell in the unzipped folder: `powershell -ExecutionPolicy Bypass -File install-driver.ps1` (add `-Force` after the F7 boot).
-5. Start PodPilot. Noise control buttons appear when the channel is open.
+4. Easiest: in Earlo, open Settings > Noise control > **Install noise control driver**. Or, in an administrator PowerShell in the unzipped folder: `powershell -ExecutionPolicy Bypass -File install-driver.ps1` (add `-Force` after the F7 boot).
+5. Start Earlo. Noise control buttons appear when the channel is open.
 
 If Memory integrity (Windows Security > Device security > Core isolation) is on, Windows may still block the driver.
 To remove it, run `uninstall-driver.ps1` (and `bcdedit /set testsigning off` if you turned it on).

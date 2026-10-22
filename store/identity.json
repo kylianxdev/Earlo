@@ -1,5 +1,5 @@
 {
-  "_comment": "Values from Partner Center > PodPilot (9NB1SVRN9Z6T) > Product identity.",
+  "_comment": "Values from Partner Center > Earlo (9NB1SVRN9Z6T) > Product identity. The identity name is fixed per product, so it keeps PodPilot after the rename.",
   "IdentityName": "KyliandeGroot.PodPilot",
   "Publisher": "CN=ED58367B-5387-4F29-82A5-F112480E0ECF",
   "PublisherDisplayName": "Kylian de Groot"

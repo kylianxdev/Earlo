@@ -1,0 +1,44 @@
+<UserControl x:Class="Earlo.App.Controls.DevicePanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Earlo.App.Controls"
+             xmlns:app="clr-namespace:Earlo.App">
+    <Grid>
+        <!-- Device found -->
+        <StackPanel x:Name="DeviceView">
+            <TextBlock x:Name="NameText" Margin="0,0,64,0" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimary}" TextTrimming="CharacterEllipsis" />
+            <TextBlock x:Name="ModelText" FontSize="12" Margin="0,2,0,0" Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis" />
+
+            <Grid Margin="0,12,0,10" Height="170">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Image x:Name="Render" Grid.ColumnSpan="2" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" />
+                <c:DeviceArt x:Name="BudsArt" x:FieldModifier="private" Margin="0,20,0,20" />
+                <c:DeviceArt x:Name="CaseArt" Grid.Column="1" ShowCase="True" Width="96" Margin="8,40,0,20" />
+            </Grid>
+
+            <c:BatteryBar x:Name="LeftBar" Label="{x:Static app:Strings.Left}" />
+            <c:BatteryBar x:Name="RightBar" Label="{x:Static app:Strings.Right}" />
+            <c:BatteryBar x:Name="CaseBar" Label="{x:Static app:Strings.Case}" />
+            <c:BatteryBar x:Name="SingleBar" Label="{x:Static app:Strings.Battery}" />
+
+            <c:NoiseControlBar x:Name="NoiseBar" Margin="0,12,0,0" Visibility="Collapsed" />
+
+            <DockPanel Margin="0,10,0,0">
+                <Button x:Name="ConnectButton" DockPanel.Dock="Right" Click="OnConnectClick" Visibility="Collapsed"
+                        Padding="12,3" FontSize="12" MinHeight="0" VerticalAlignment="Center" />
+                <Ellipse x:Name="StatusDot" Width="8" Height="8" VerticalAlignment="Center" Margin="0,1,8,0" />
+                <TextBlock x:Name="StatusText" FontSize="12" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis" />
+            </DockPanel>
+        </StackPanel>
+
+        <!-- Nothing found yet -->
+        <StackPanel x:Name="EmptyView" VerticalAlignment="Center" Margin="0,24">
+            <TextBlock Text="&#xE7F6;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="40" HorizontalAlignment="Center" Foreground="{DynamicResource TextSecondary}" />
+            <TextBlock x:Name="EmptyTitle" FontSize="16" FontWeight="SemiBold" Margin="0,12,0,0" HorizontalAlignment="Center" TextAlignment="Center" Foreground="{DynamicResource TextPrimary}" />
+            <TextBlock x:Name="EmptyText" FontSize="12" Margin="0,6,0,0" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="300" Foreground="{DynamicResource TextSecondary}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

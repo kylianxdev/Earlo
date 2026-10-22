@@ -1,19 +1,19 @@
-# PodPilot privacy policy
+# Earlo privacy policy
 
 Last updated: 21 October 2026
 
-PodPilot does not collect, store or share personal data. There is no account, no analytics and no telemetry.
+Earlo does not collect, store or share personal data. There is no account, no analytics and no telemetry.
 
-## What PodPilot reads on your PC
+## What Earlo reads on your PC
 
 - **Bluetooth LE broadcasts** from nearby AirPods and Beats (model, battery levels, in-ear and case status).
   These are processed in memory and never leave your PC.
 - **Paired Bluetooth devices**, to show your headphones' name and whether they are connected.
 - **Media playback state**, to pause and resume playback when you take an earbud out.
 
-## What PodPilot stores
+## What Earlo stores
 
-Only on your PC, in `%APPDATA%\PodPilot`:
+Only on your PC, in `%APPDATA%\Earlo`:
 
 - `settings.json`: your settings.
 - `case-battery.json`: the last known battery level of the charging case.
@@ -28,4 +28,4 @@ Only on your PC, in `%APPDATA%\PodPilot`:
 
 ## Contact
 
-Questions? Open an issue at https://github.com/kylianxdev/PodPilot/issues.
+Questions? Open an issue at https://github.com/kylianxdev/Earlo/issues.

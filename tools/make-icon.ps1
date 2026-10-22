@@ -1,4 +1,4 @@
-# Generates src/PodPilot.App/Assets/podpilot.ico (and a 256px PNG for the README).
+# Generates src/Earlo.App/Assets/earlo.ico (and a 256px PNG for the README).
 # Uses tools/icon-source.png when present, otherwise draws a simple vector icon.
 # Run from the repository root: powershell -ExecutionPolicy Bypass -File tools/make-icon.ps1
 Add-Type -AssemblyName System.Drawing
@@ -62,7 +62,7 @@ function New-VectorIconBitmap([int]$size) {
 }
 
 $root = Split-Path $PSScriptRoot -Parent
-$assets = Join-Path $root 'src/PodPilot.App/Assets'
+$assets = Join-Path $root 'src/Earlo.App/Assets'
 New-Item -ItemType Directory -Force $assets | Out-Null
 
 $sizes = 16, 20, 24, 32, 40, 48, 64, 128, 256
@@ -115,5 +115,5 @@ for ($i = 0; $i -lt $sizes.Count; $i++) {
 }
 foreach ($png in $pngs) { $w.Write($png) }
 $w.Flush()
-[System.IO.File]::WriteAllBytes((Join-Path $assets 'podpilot.ico'), $out.ToArray())
-Write-Host "Wrote $assets\podpilot.ico"
+[System.IO.File]::WriteAllBytes((Join-Path $assets 'earlo.ico'), $out.ToArray())
+Write-Host "Wrote $assets\earlo.ico"
