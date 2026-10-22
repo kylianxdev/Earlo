@@ -27,6 +27,8 @@ public static class Updater
 {
     public const string UpdatedArgument = "--updated";
     const string LatestReleaseUrl = "https://api.github.com/repos/kylianxdev/Earlo/releases/latest";
+    // Earlo was called PodPilot; until the repository is renamed on GitHub, its releases are there.
+    const string LegacyReleaseUrl = "https://api.github.com/repos/kylianxdev/PodPilot/releases/latest";
 
     static readonly Lazy<HttpClient> LazyHttp = new(CreateClient);
 
@@ -45,7 +47,7 @@ public static class Updater
     /// <summary>Returns the newer release for this build, or null when up to date.</summary>
     public static async Task<UpdateInfo?> CheckAsync(CancellationToken cancellationToken = default)
     {
-        using var response = await Http.GetAsync(LatestReleaseUrl, cancellationToken);
+        using var response = await GetLatestReleaseAsync(cancellationToken);
         response.EnsureSuccessStatusCode();
         using var json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(cancellationToken), cancellationToken: cancellationToken);
         var release = json.RootElement;
@@ -143,6 +145,15 @@ public static class Updater
         catch (UnauthorizedAccessException)
         {
         }
+    }
+
+    static async Task<HttpResponseMessage> GetLatestReleaseAsync(CancellationToken cancellationToken)
+    {
+        var response = await Http.GetAsync(LatestReleaseUrl, cancellationToken);
+        if (response.IsSuccessStatusCode)
+            return response;
+        response.Dispose();
+        return await Http.GetAsync(LegacyReleaseUrl, cancellationToken);
     }
 
     static Version Normalize(Version v) => new(v.Major, v.Minor, Math.Max(v.Build, 0));
