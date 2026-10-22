@@ -147,5 +147,6 @@ jobs:
       # Only the zips go on GitHub; the Store bundle is uploaded to Partner Center.
       - uses: softprops/action-gh-release@v2
         with:
+          name: Earlo ${{ github.ref_name }}
           files: '*.zip'
           generate_release_notes: true
