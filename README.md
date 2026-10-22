@@ -15,6 +15,7 @@
   <a href="../../releases"><img src="https://img.shields.io/github/downloads/kylianxdev/Earlo/total?color=0a84ff" alt="Downloads"></a>
   <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-1c1c1e" alt="Windows 10 and 11">
   <a href="LICENSE"><img src="https://img.shields.io/github/license/kylianxdev/Earlo?color=6e6e73" alt="MIT license"></a>
+  <a href="https://kylianxdev.github.io/Earlo/"><img src="https://img.shields.io/badge/website-kylianxdev.github.io%2FEarlo-34c759" alt="Earlo website"></a>
 </p>
 
 <p align="center">

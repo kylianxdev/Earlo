@@ -77,16 +77,25 @@ public static class PreviewRenderer
         Save((FrameworkElement)banner.Content, Path.Combine(folder, "connected.png"));
         banner.Close();
 
-        var settings = new SettingsWindow(new AppSettings { Persist = false }) { Left = -10000, Top = -10000, Height = 820 };
-        settings.Show();
-        settings.Update(new DeviceViewState(DemoMode.Snapshot(), connected, ScannerStatus.Scanning, 20, aap, CanConnect: true),
-            [connected], driverPresent: true);
-        settings.UpdateLayout();
-        Save((FrameworkElement)settings.Content, Path.Combine(folder, "settings.png"), background: Brushes.White);
-        settings.Close();
+        RenderSettings(Path.Combine(folder, "settings.png"),
+            new DeviceViewState(DemoMode.Snapshot(), connected, ScannerStatus.Scanning, 20, aap, CanConnect: true), driverPresent: true);
+        // The Store version has no driver, so its screenshots show no noise control.
+        RenderSettings(Path.Combine(folder, "settings-store.png"),
+            new DeviceViewState(DemoMode.Snapshot(), connected, ScannerStatus.Scanning, 20, CanConnect: true), driverPresent: false);
 
         RenderPopup(Path.Combine(folder, "popup-searching.png"),
             new DeviceViewState(null, null, ScannerStatus.Scanning, 20));
+    }
+
+    static void RenderSettings(string file, DeviceViewState state, bool driverPresent)
+    {
+        var settings = new SettingsWindow(new AppSettings { Persist = false }) { Left = -10000, Top = -10000, Height = 820 };
+        settings.Show();
+        settings.Update(state, [state.Connected!], driverPresent);
+        settings.UpdateMicrophone(state.Connected!.Name, handsFreeOn: false, busy: false);
+        settings.UpdateLayout();
+        Save((FrameworkElement)settings.Content, file, background: Brushes.White);
+        settings.Close();
     }
 
     static void RenderPopup(string file, DeviceViewState state)
