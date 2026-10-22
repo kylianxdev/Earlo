@@ -70,6 +70,13 @@ public static class PreviewRenderer
         Save((FrameworkElement)osd.Content, Path.Combine(folder, "volume.png"));
         osd.Close();
 
+        var banner = new ConnectedBannerWindow { Left = -10000, Top = -10000 };
+        banner.SetContent("My AirPods Pro", DemoMode.Snapshot());
+        banner.Show();
+        banner.UpdateLayout();
+        Save((FrameworkElement)banner.Content, Path.Combine(folder, "connected.png"));
+        banner.Close();
+
         var settings = new SettingsWindow(new AppSettings { Persist = false }) { Left = -10000, Top = -10000, Height = 820 };
         settings.Show();
         settings.Update(new DeviceViewState(DemoMode.Snapshot(), connected, ScannerStatus.Scanning, 20, aap, CanConnect: true),

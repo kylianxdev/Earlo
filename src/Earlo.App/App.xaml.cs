@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Windows;
@@ -42,6 +43,9 @@ public partial class App : Application
     bool _driverInstalled;
     bool _driverBusy;
     VolumeOsdWindow? _osd;
+    ConnectedBannerWindow? _banner;
+    readonly HashSet<string> _connectedIds = [];
+    DateTime _bannerQuietUntil;
     AudioEndpoints.VolumeWatcher? _volumeWatcher;
     string? _volumeWatcherId;
     DateTime _osdQuietUntil;
@@ -148,6 +152,8 @@ public partial class App : Application
         _paired.ConnectionChanged += (_, device) => Dispatcher.BeginInvoke(() => OnPairedConnectionChanged(device));
         _paired.DevicesChanged += (_, _) => Dispatcher.BeginInvoke(Refresh);
 
+        // At start Windows reports the earbuds that are already connected; that is no news.
+        _bannerQuietUntil = DateTime.UtcNow.AddSeconds(8);
         _paired.Start();
         _aap.Changed += (_, _) => Dispatcher.BeginInvoke(Refresh);
         _aap.SessionStarted += (_, session) =>
@@ -280,6 +286,7 @@ public partial class App : Application
         }
 
         _lowBattery?.Check(snapshot, _paired.ConnectedDevice?.Name ?? snapshot.Device.Name);
+        _banner?.Update(CurrentState().Snapshot);
         Refresh();
     }
 
@@ -372,6 +379,15 @@ public partial class App : Application
 
     void OnPairedConnectionChanged(PairedDeviceInfo device)
     {
+        bool justConnected = device.IsConnected && _connectedIds.Add(device.Id);
+        if (!device.IsConnected)
+            _connectedIds.Remove(device.Id);
+        if (justConnected && _settings.ConnectedBanner && DateTime.UtcNow >= _bannerQuietUntil)
+        {
+            _banner ??= new ConnectedBannerWindow();
+            _banner.Present(device.Name, CurrentState().Snapshot);
+        }
+
         if (device.IsConnected)
             _aap.RetryAll();
         _ = _galaxy.EnsureAsync(_paired.Devices);

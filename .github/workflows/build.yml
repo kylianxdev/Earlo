@@ -77,6 +77,31 @@ jobs:
           }
           Get-ChildItem Earlo-*.zip, PodPilot-*.zip | ForEach-Object { "{0}: {1:N1} MB" -f $_.Name, ($_.Length / 1MB) }
 
+      # The app renders its own popups, settings and notices for the README (docs/screenshots).
+      - name: Render screenshots
+        continue-on-error: true
+        timeout-minutes: 5
+        shell: pwsh
+        run: |
+          Start-Process publish/win-x64/Earlo.exe -ArgumentList '--render-preview', "$PWD\screenshots" -Wait
+          Get-ChildItem screenshots | ForEach-Object { "{0} ({1:N0} KB)" -f $_.Name, ($_.Length / 1KB) }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: screenshots
+          if-no-files-found: ignore
+
+      # TEMPORARY: print one preview so it can be checked from the CI log. Removed before merging.
+      - name: Preview (temporary)
+        continue-on-error: true
+        shell: pwsh
+        run: |
+          $b64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes("screenshots/connected.png"))
+          "BEGIN-PNG"
+          for ($i = 0; $i -lt $b64.Length; $i += 800) { $b64.Substring($i, [Math]::Min(800, $b64.Length - $i)) }
+          "END-PNG"
+
       - name: Store package
         shell: pwsh
         run: |

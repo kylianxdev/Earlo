@@ -36,6 +36,7 @@
                 <TextBlock Text="{x:Static app:Strings.Popup}" Style="{StaticResource SectionHeader}" />
                 <CheckBox Content="{x:Static app:Strings.PopupOnLidOpen}" IsChecked="{Binding PopupOnLidOpen}" />
                 <CheckBox Content="{x:Static app:Strings.PopupOnConnect}" IsChecked="{Binding PopupOnConnect}" />
+                <CheckBox Content="{x:Static app:Strings.ConnectedBanner}" IsChecked="{Binding ConnectedBanner}" />
                 <DockPanel Margin="0,8,0,0">
                     <TextBlock DockPanel.Dock="Right" Width="40" TextAlignment="Right" VerticalAlignment="Center" Text="{Binding PopupSeconds, StringFormat={}{0} s}" />
                     <TextBlock Text="{x:Static app:Strings.HideAfter}" VerticalAlignment="Center" MinWidth="110" Margin="0,0,12,0" />

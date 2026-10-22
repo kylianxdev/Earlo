@@ -34,6 +34,7 @@ Earlo brings back what you are used to from an iPhone, and adds the things Windo
 ### See everything at a glance
 
 - **Popup when you open the case**, just like on an iPhone: your earbuds, the case, charging state, in a clean Windows 11 card.
+- **"Connected" notice** in the top right corner when your earbuds connect, with their battery levels. It disappears by itself.
 - **Every earbud, live**: in your ear, out of your ear or in the case, with its own battery level.
 - **Battery in the tray**: hover the icon for every level, or turn on the small battery bar on the icon itself.
 - **Low battery warnings** for each earbud and the case, before your music cuts out.

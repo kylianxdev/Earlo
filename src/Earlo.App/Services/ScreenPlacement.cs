@@ -68,6 +68,21 @@ public static partial class ScreenPlacement
         return edge;
     }
 
+    /// <summary>Moves a shown window into the top right corner of the work area, on the taskbar's monitor.</summary>
+    public static void PlaceTopRight(Window window)
+    {
+        var hwnd = new WindowInteropHelper(window).EnsureHandle();
+        var (_, area) = Taskbar();
+        for (int pass = 0; pass < 2; pass++) // twice, for a monitor with another DPI (see Place)
+        {
+            window.UpdateLayout();
+            if (!GetWindowRect(hwnd, out var r))
+                break;
+            int x = (int)Math.Round(area.Right - (r.Right - r.Left));
+            SetWindowPos(hwnd, IntPtr.Zero, x, (int)Math.Round(area.Top), 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+        }
+    }
+
     /// <summary>The offset (in DIPs) content starts at when sliding in from the taskbar.</summary>
     public static Vector SlideOffset(TaskbarEdge edge, double distance) => edge switch
     {

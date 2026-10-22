@@ -31,6 +31,7 @@ public sealed class AppSettings : INotifyPropertyChanged
     bool _autoUpdate = true;
     bool _autoConnect;
     bool _volumeOsd = true;
+    bool _connectedBanner = true;
 
     public bool StartWithWindows { get => _startWithWindows; set => Set(ref _startWithWindows, value); }
     public bool PopupOnLidOpen { get => _popupOnLidOpen; set => Set(ref _popupOnLidOpen, value); }
@@ -63,6 +64,9 @@ public sealed class AppSettings : INotifyPropertyChanged
 
     /// <summary>Show a volume indicator when the volume changes from the earbuds (stem swipe), which Windows does not show.</summary>
     public bool VolumeOsd { get => _volumeOsd; set => Set(ref _volumeOsd, value); }
+
+    /// <summary>Show a "Connected" notice in the top right corner when earbuds connect to this PC.</summary>
+    public bool ConnectedBanner { get => _connectedBanner; set => Set(ref _connectedBanner, value); }
 
     [JsonIgnore]
     public bool Persist { get; set; } = true;

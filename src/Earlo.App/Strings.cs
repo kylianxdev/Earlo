@@ -76,6 +76,7 @@ public static class Strings
     public static string Popup => T("Popup", "Pop-up");
     public static string PopupOnLidOpen => T("Show popup when the case is opened", "Pop-up tonen als de case opengaat");
     public static string PopupOnConnect => T("Show popup when headphones connect", "Pop-up tonen als de oortjes verbinden");
+    public static string ConnectedBanner => T("Show a notice at the top right when they connect", "Melding rechtsboven tonen als ze verbinden");
     public static string HideAfter => T("Hide after", "Verbergen na");
     public static string Connection => T("Connection", "Verbinding");
     public static string AutoConnect => T("Connect to this PC when you put them in your ears", "Met deze pc verbinden als je ze indoet");
@@ -161,6 +162,7 @@ public static class Strings
     public static string ConnectFailed(string name) => T($"{name} did not connect. Make sure they are out of the case and nearby.",
         $"{name} kon niet verbinden. Zorg dat ze uit de case en dichtbij zijn.");
     public static string Volume => T("Volume", "Volume");
+    public static string BannerConnected => T("Connected", "Verbonden");
     public static string FirstRun => T("Earlo runs in the notification area. Click its icon to open it.",
         "Earlo staat in het systeemvak (bij de klok). Klik op het icoon om het te openen.");
 }
