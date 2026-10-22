@@ -48,6 +48,11 @@
                 <TextBlock Style="{StaticResource Hint}" Text="{x:Static app:Strings.AutoConnectHint}" />
                 <CheckBox Content="{x:Static app:Strings.VolumeOsd}" Margin="0,8,0,0" IsChecked="{Binding VolumeOsd}" />
 
+                <TextBlock Text="{x:Static app:Strings.SoundQuality}" Style="{StaticResource SectionHeader}" />
+                <CheckBox x:Name="MicOffCheck" Content="{x:Static app:Strings.MicOff}" IsEnabled="False" Click="OnMicOffClick" />
+                <TextBlock Style="{StaticResource Hint}" Text="{x:Static app:Strings.MicOffHint}" />
+                <TextBlock x:Name="MicStatusText" Style="{StaticResource Hint}" Visibility="Collapsed" />
+
                 <TextBlock Text="{x:Static app:Strings.EarDetection}" Style="{StaticResource SectionHeader}" />
                 <CheckBox Content="{x:Static app:Strings.PauseOnRemove}" IsChecked="{Binding EarDetection}" />
                 <DockPanel Margin="28,6,0,6" IsEnabled="{Binding EarDetection}">

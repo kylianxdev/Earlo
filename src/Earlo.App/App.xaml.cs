@@ -42,6 +42,8 @@ public partial class App : Application
     bool _updating;
     bool _driverInstalled;
     bool _driverBusy;
+    bool? _handsFreeOn;
+    bool _handsFreeBusy;
     VolumeOsdWindow? _osd;
     ConnectedBannerWindow? _banner;
     readonly HashSet<string> _connectedIds = [];
@@ -71,6 +73,11 @@ public partial class App : Application
         if (DriverInstaller.IsElevatedCommand(e.Args.FirstOrDefault()))
         {
             Shutdown(DriverInstaller.RunElevatedCommand(e.Args[0]));
+            return;
+        }
+        if (HandsFree.IsElevatedCommand(e.Args.FirstOrDefault()))
+        {
+            Shutdown(HandsFree.RunElevatedCommand(e.Args));
             return;
         }
 
@@ -150,7 +157,12 @@ public partial class App : Application
         _scanner.Received += (_, a) => Dispatcher.BeginInvoke(() => _tracker.Process(a.Message, a.Rssi));
         _scanner.StatusChanged += (_, _) => Dispatcher.BeginInvoke(Refresh);
         _paired.ConnectionChanged += (_, device) => Dispatcher.BeginInvoke(() => OnPairedConnectionChanged(device));
-        _paired.DevicesChanged += (_, _) => Dispatcher.BeginInvoke(Refresh);
+        _paired.DevicesChanged += (_, _) => Dispatcher.BeginInvoke(() =>
+        {
+            Refresh();
+            if (_settingsWindow is not null)
+                _ = RefreshMicrophoneAsync();
+        });
 
         // At start Windows reports the earbuds that are already connected; that is no news.
         _bannerQuietUntil = DateTime.UtcNow.AddSeconds(8);
@@ -332,6 +344,29 @@ public partial class App : Application
         }
     }
 
+    /// <summary>Reads whether the earbuds' microphone (their Hands-Free service) is on, for the settings window.</summary>
+    async System.Threading.Tasks.Task RefreshMicrophoneAsync()
+    {
+        if (_handsFreeBusy)
+            return;
+        var target = ConnectTarget;
+        _handsFreeOn = target is null ? null : await System.Threading.Tasks.Task.Run(() => HandsFree.IsEnabled(target.Address));
+        _settingsWindow?.UpdateMicrophone(target?.Name, _handsFreeOn, _handsFreeBusy);
+    }
+
+    /// <summary>Turns the earbuds' microphone off for stereo sound in every app, or back on.</summary>
+    async System.Threading.Tasks.Task SetMicrophoneOffAsync(bool off)
+    {
+        if (_handsFreeBusy || ConnectTarget is not { } target)
+            return;
+        _handsFreeBusy = true;
+        _settingsWindow?.UpdateMicrophone(target.Name, _handsFreeOn, busy: true);
+        bool ok = await HandsFree.SetEnabledAsync(target.Address, enabled: !off);
+        _handsFreeBusy = false;
+        await RefreshMicrophoneAsync();
+        _tray?.Notify("Earlo", !ok ? Strings.MicChangeFailed : off ? Strings.MicTurnedOff(target.Name) : Strings.MicTurnedOn(target.Name));
+    }
+
     async System.Threading.Tasks.Task RefreshDriverStateAsync()
     {
         _driverInstalled = await System.Threading.Tasks.Task.Run(DriverInstaller.IsInstalled);
@@ -461,9 +496,11 @@ public partial class App : Application
             _settingsWindow.ConversationAwarenessRequested += (_, on) => _ = SendAap(s => s.SetConversationAwarenessAsync(on));
             _settingsWindow.AdaptiveStrengthRequested += (_, level) => _ = SendAap(s => s.SetAdaptiveStrengthAsync(level));
             _settingsWindow.DriverButtonClicked += async (_, _) => await ToggleDriverAsync();
+            _settingsWindow.MicrophoneOffRequested += async (_, off) => await SetMicrophoneOffAsync(off);
             _settingsWindow.CheckUpdatesRequested += async (_, _) => await CheckForUpdatesAsync(manual: true);
             _settingsWindow.VolumeSwipeRequested += (_, on) => _ = SendAap(s => s.SetVolumeSwipeAsync(on));
             _ = RefreshDriverStateAsync();
+            _ = RefreshMicrophoneAsync();
             _settingsWindow.Closed += (_, _) => _settingsWindow = null;
             _settingsWindow.Update(CurrentState(), _paired.Devices, _aap.DriverPresent);
             _settingsWindow.Show();

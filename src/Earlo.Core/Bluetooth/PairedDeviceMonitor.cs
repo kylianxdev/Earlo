@@ -6,7 +6,8 @@ using Windows.Devices.Enumeration;
 namespace Earlo.Core.Bluetooth;
 
 /// <param name="ContainerId">Groups the device with its other parts, like its Windows audio endpoints.</param>
-public sealed record PairedDeviceInfo(string Id, string Name, bool IsConnected, Guid? ContainerId = null);
+/// <param name="Address">The Bluetooth address, for the classic Bluetooth APIs.</param>
+public sealed record PairedDeviceInfo(string Id, string Name, bool IsConnected, Guid? ContainerId = null, ulong Address = 0);
 
 /// <summary>
 /// Tracks AirPods, Beats and Galaxy Buds that are paired with this PC and whether they are connected.
@@ -103,7 +104,7 @@ public sealed partial class PairedDeviceMonitor : IDisposable
 
     PairedDeviceInfo ToInfo(BluetoothDevice d) =>
         new(d.DeviceId, d.Name, d.ConnectionStatus == BluetoothConnectionStatus.Connected,
-            _containers.TryGetValue(d.DeviceId, out var container) ? container : null);
+            _containers.TryGetValue(d.DeviceId, out var container) ? container : null, d.BluetoothAddress);
 
     [GeneratedRegex("airpods|beats", RegexOptions.IgnoreCase)]
     private static partial Regex AppleAudioName();

@@ -12,7 +12,7 @@
     <RootNamespace>Earlo.App</RootNamespace>
     <ApplicationIcon>Assets\earlo.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>0.5.0</Version>
+    <Version>0.6.0</Version>
     <Product>Earlo</Product>
     <Description>Open-source AirPods and Beats companion for Windows</Description>
     <Copyright>Earlo contributors</Copyright>

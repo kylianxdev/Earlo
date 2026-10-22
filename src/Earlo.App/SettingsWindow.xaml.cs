@@ -88,6 +88,34 @@ public partial class SettingsWindow : Window
 
     void OnDriverClick(object sender, RoutedEventArgs e) => DriverButtonClicked?.Invoke(this, EventArgs.Empty);
 
+    /// <summary>True: turn the earbuds' microphone off (their Hands-Free service), false: back on.</summary>
+    public event EventHandler<bool>? MicrophoneOffRequested;
+
+    string _micDevice = string.Empty;
+
+    /// <param name="device">The paired earbuds it is about, null when there are none.</param>
+    /// <param name="handsFreeOn">Whether their Hands-Free service is on; null when Windows cannot tell.</param>
+    public void UpdateMicrophone(string? device, bool? handsFreeOn, bool busy)
+    {
+        _micDevice = device ?? string.Empty;
+        MicOffCheck.IsChecked = handsFreeOn == false;
+        MicOffCheck.IsEnabled = handsFreeOn is not null && !busy;
+        MicStatusText.Text = busy ? Strings.Working : device is null ? Strings.MicNoDevice : string.Empty;
+        MicStatusText.Visibility = MicStatusText.Text.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    void OnMicOffClick(object sender, RoutedEventArgs e)
+    {
+        bool off = MicOffCheck.IsChecked == true;
+        if (off && MessageBox.Show(this, Strings.MicOffConfirm(_micDevice), Strings.MicOffConfirmTitle,
+                MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes)
+        {
+            MicOffCheck.IsChecked = false;
+            return;
+        }
+        MicrophoneOffRequested?.Invoke(this, off);
+    }
+
     public event EventHandler<bool>? VolumeSwipeRequested;
 
     void OnVolumeSwipeClick(object sender, RoutedEventArgs e) =>

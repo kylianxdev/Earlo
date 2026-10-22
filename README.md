@@ -44,6 +44,7 @@ Earlo brings back what you are used to from an iPhone, and adds the things Windo
 - **Automatic ear detection**: take an earbud out and Spotify, YouTube, Netflix or any other app pauses. Put it back in and it plays on.
 - **Connect in one click** from the popup, or let your earbuds switch to the PC by themselves when you put them in, like on an iPhone.
 - **Disconnect in one click**, so your phone can have them back.
+- **Stereo sound in every app**: Windows drops AirPods to muffled call quality as soon as an app opens their microphone. One switch turns the earbuds' microphone off, so they always sound like they should (calls then use your PC's microphone).
 - **A volume indicator for stem swipes**: Windows changes the volume silently when you swipe; Earlo shows it, like the volume keys do.
 - **Noise control** (Off, Noise Cancellation, Transparency, Adaptive) and Conversation Awareness with the [experimental driver](#noise-control-it-works-but-windows-makes-it-hard).
 
@@ -97,6 +98,11 @@ Yes. Take an earbud out and Earlo pauses Spotify, YouTube, Netflix or any other 
 **Can I switch AirPods noise cancellation on Windows?**
 Yes: Off, Noise Cancellation, Transparency and Adaptive, plus Conversation Awareness, with Earlo's
 [experimental driver](#noise-control-it-works-but-windows-makes-it-hard).
+
+**Why do my AirPods sound bad on Windows?**
+As soon as an app opens the earbuds' microphone (Teams, Discord, Zoom, a browser), Windows switches them from stereo to the Hands-Free profile:
+mono and muffled, like a phone call. In Earlo, turn on Settings > Sound quality > "Turn off the earbuds' microphone for the best sound".
+They then always play in stereo; the catch is that their microphone no longer works, so calls use your PC's microphone. You can switch it back at any time.
 
 **Does it work with Galaxy Buds and Beats?**
 Yes. Beats earbuds and headphones work like AirPods. Galaxy Buds, from the 2019 Buds to the Buds3 Pro and Buds Core,

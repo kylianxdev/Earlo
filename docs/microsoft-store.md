@@ -70,6 +70,7 @@ type ("AirPods battery", "Galaxy Buds") are in the description itself, not only 
 > • Automatic ear detection: take an earbud out and your music pauses, put it back in and it plays again (Spotify, YouTube, Netflix, browsers and more)
 > • Connect and disconnect your earbuds in one click
 > • A "Connected" notice in the top right corner when your earbuds connect, with their battery levels
+> • Fix the muffled sound: Windows switches AirPods to call quality as soon as an app uses their microphone; one switch keeps them in stereo
 > • A volume indicator when you swipe the stem to change the volume
 > • Low battery warnings for each earbud and the case
 > • Works with AirPods 1, 2, 3 and 4, AirPods Pro 1, 2 and 3, AirPods Max, Beats earbuds and headphones (Powerbeats Pro, Beats Fit Pro, Studio Buds, Solo Buds, Studio Pro and more) and Samsung Galaxy Buds (Buds, Buds+, Buds Live, Buds Pro, Buds2, Buds2 Pro, Buds FE, Buds3, Buds3 Pro, Buds3 FE, Buds Core)
@@ -91,7 +92,7 @@ type ("AirPods battery", "Galaxy Buds") are in the description itself, not only 
 | 4 | ear detection |
 | 5 | Bluetooth headphones battery |
 | 6 | battery popup |
-| 7 | wireless earbuds |
+| 7 | earbuds sound quality |
 
 The old name is only mentioned in the description: another app in the Store is called PodPilot, so using it as
 a search term could count as misleading. If certification objects to a device brand in the search terms,
