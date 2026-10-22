@@ -8,3 +8,5 @@ preview/
 TestResults/
 earlo-log.txt
 src/Earlo.App/DriverPackage/
+store-screenshots/
+renders/

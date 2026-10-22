@@ -92,6 +92,16 @@ jobs:
           path: screenshots
           if-no-files-found: ignore
 
+      # Store screenshots with captions, in the languages of the Store listings (store/listing).
+      - name: Store screenshots
+        continue-on-error: true
+        timeout-minutes: 5
+        shell: pwsh
+        run: |
+          Start-Process publish/win-x64/Earlo.exe -ArgumentList '--render-preview', "$PWD\screenshots-nl", '--lang', 'nl' -Wait
+          ./tools/make-store-screenshots.ps1 -Renders screenshots -Lang en -Out store-screenshots/en
+          ./tools/make-store-screenshots.ps1 -Renders screenshots-nl -Lang nl -Out store-screenshots/nl
+
       - name: Store package
         shell: pwsh
         run: |
@@ -108,7 +118,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: store
-          path: Earlo-store.msixbundle
+          path: |
+            Earlo-store.msixbundle
+            store-screenshots
 
   driver:
     runs-on: windows-2022
@@ -165,3 +177,40 @@ jobs:
           name: Earlo ${{ github.ref_name }}
           files: '*.zip'
           generate_release_notes: true
+
+  # Sends the release to the Microsoft Store as a new submission (package only; the listing stays as it is
+  # in Partner Center). Needs the four PARTNER_CENTER_* secrets, see docs/microsoft-store.md; without them
+  # this job does nothing.
+  store:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: app
+    runs-on: windows-latest
+    env:
+      TENANT_ID: ${{ secrets.PARTNER_CENTER_TENANT_ID }}
+      SELLER_ID: ${{ secrets.PARTNER_CENTER_SELLER_ID }}
+      CLIENT_ID: ${{ secrets.PARTNER_CENTER_CLIENT_ID }}
+      CLIENT_SECRET: ${{ secrets.PARTNER_CENTER_CLIENT_SECRET }}
+      STORE_APP_ID: 9NB1SVRN9Z6T
+    steps:
+      - name: Check Partner Center secrets
+        id: secrets
+        shell: pwsh
+        run: |
+          $ready = $env:TENANT_ID -and $env:SELLER_ID -and $env:CLIENT_ID -and $env:CLIENT_SECRET
+          "ready=$($ready.ToString().ToLower())" >> $env:GITHUB_OUTPUT
+          if (-not $ready) { Write-Host 'No Partner Center secrets; upload Earlo-store.msixbundle in Partner Center yourself.' }
+
+      - uses: actions/download-artifact@v4
+        if: steps.secrets.outputs.ready == 'true'
+        with:
+          name: store
+
+      - uses: microsoft/microsoft-store-apppublisher@v1.4
+        if: steps.secrets.outputs.ready == 'true'
+
+      - name: Submit to the Microsoft Store
+        if: steps.secrets.outputs.ready == 'true'
+        shell: pwsh
+        run: |
+          msstore reconfigure --tenantId $env:TENANT_ID --sellerId $env:SELLER_ID --clientId $env:CLIENT_ID --clientSecret $env:CLIENT_SECRET
+          msstore publish Earlo-store.msixbundle --appId $env:STORE_APP_ID
