@@ -110,38 +110,6 @@ jobs:
           name: store
           path: Earlo-store.msixbundle
 
-      # TEMPORARY: print a small copy of one preview so it can be checked from the CI log. Removed before merging.
-      - name: Preview (temporary)
-        continue-on-error: true
-        shell: pwsh
-        run: |
-          Add-Type -AssemblyName System.Drawing
-          Get-ChildItem screenshots | ForEach-Object { "{0} ({1:N0} KB)" -f $_.Name, ($_.Length / 1KB) }
-          $src = [System.Drawing.Image]::FromFile("$PWD\screenshots\connected.png")
-          $w = [int]($src.Width / 2); $h = [int]($src.Height / 2)
-          $bmp = New-Object System.Drawing.Bitmap ($w * 2), $h
-          $g = [System.Drawing.Graphics]::FromImage($bmp)
-          $g.InterpolationMode = 'HighQualityBicubic'
-          $g.Clear([System.Drawing.Color]::FromArgb(255, 236, 239, 244))
-          $g.FillRectangle((New-Object System.Drawing.SolidBrush ([System.Drawing.Color]::FromArgb(255, 32, 32, 36))), $w, 0, $w, $h)
-          $g.DrawImage($src, 0, 0, $w, $h)
-          $g.DrawImage($src, $w, 0, $w, $h)
-          $g.Dispose()
-          $codec = [System.Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object MimeType -eq 'image/jpeg'
-          $params = New-Object System.Drawing.Imaging.EncoderParameters 1
-          $params.Param[0] = New-Object System.Drawing.Imaging.EncoderParameter ([System.Drawing.Imaging.Encoder]::Quality), 88L
-          $ms = New-Object System.IO.MemoryStream
-          $bmp.Save($ms, $codec, $params)
-          $jpg = $ms.ToArray()
-          "SHA256 " + [Convert]::ToHexString([System.Security.Cryptography.SHA256]::HashData($jpg))
-          $packed = New-Object System.IO.MemoryStream
-          $gz = New-Object System.IO.Compression.GZipStream($packed, [System.IO.Compression.CompressionLevel]::SmallestSize)
-          $gz.Write($jpg, 0, $jpg.Length); $gz.Dispose()
-          $b64 = [Convert]::ToBase64String($packed.ToArray())
-          "BEGIN-JPG"
-          for ($i = 0; $i -lt $b64.Length; $i += 200) { $b64.Substring($i, [Math]::Min(200, $b64.Length - $i)) }
-          "END-JPG"
-
   driver:
     runs-on: windows-2022
     strategy:
