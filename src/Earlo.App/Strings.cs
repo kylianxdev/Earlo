@@ -83,6 +83,14 @@ public static class Strings
     public static string AutoConnectHint => T("Like switching on an iPhone: the earbuds move to this PC when you start wearing them. Leave it off if they should stay with your phone.",
         "Net als wisselen op een iPhone: de oortjes gaan naar deze pc zodra je ze indoet. Laat dit uit als ze bij je telefoon moeten blijven.");
     public static string VolumeOsd => T("Show the volume when it changes on the earbuds", "Volume tonen als het op de oortjes verandert");
+    public static string SoundQuality => T("Sound quality", "Geluidskwaliteit");
+    public static string MicOff => T("Turn off the earbuds' microphone for the best sound", "Microfoon van de oortjes uitzetten voor het beste geluid");
+    public static string MicOffHint => T("As soon as an app uses the earbuds' microphone (Teams, Discord, a browser), Windows switches them to call quality: mono and muffled. With the microphone off they always play in stereo quality, but their microphone no longer works; calls use your PC's microphone. Windows may ask for administrator permission.",
+        "Zodra een app de microfoon van de oortjes gebruikt (Teams, Discord, een browser), zet Windows ze op gesprekskwaliteit: mono en dof. Met de microfoon uit spelen ze altijd in stereokwaliteit, maar werkt hun microfoon niet meer; bij bellen gebruik je dan de microfoon van je pc. Windows kan om beheerdersrechten vragen.");
+    public static string MicNoDevice => T("Pair your earbuds with this PC first.", "Koppel eerst je oortjes met deze pc.");
+    public static string MicOffConfirmTitle => T("Turn off the microphone?", "Microfoon uitzetten?");
+    public static string MicOffConfirm(string name) => T($"The microphone of {name} will no longer work on this PC. Music and video always keep stereo quality, and calls use your PC's microphone.\n\nYou can turn it back on in Settings at any time.",
+        $"De microfoon van {name} werkt dan niet meer op deze pc. Muziek en video houden altijd stereokwaliteit, en bij bellen gebruik je de microfoon van je pc.\n\nJe kunt hem altijd weer aanzetten in Instellingen.");
     public static string EarDetection => T("Automatic ear detection", "Automatische oordetectie");
     public static string PauseOnRemove => T("Pause media when you take an earbud out", "Media pauzeren als je een oortje uitdoet");
     public static string PauseWhen => T("Pause when", "Pauzeren als");
@@ -163,6 +171,10 @@ public static class Strings
         $"{name} kon niet verbinden. Zorg dat ze uit de case en dichtbij zijn.");
     public static string Volume => T("Volume", "Volume");
     public static string BannerConnected => T("Connected", "Verbonden");
+    public static string MicTurnedOff(string name) => T($"Microphone off: {name} now always plays in stereo quality.", $"Microfoon uit: {name} speelt nu altijd in stereokwaliteit.");
+    public static string MicTurnedOn(string name) => T($"The microphone of {name} works again.", $"De microfoon van {name} werkt weer.");
+    public static string MicChangeFailed => T("The microphone could not be changed. You can also do it in Control Panel > Devices and Printers > your earbuds > Properties > Services > Handsfree Telephony.",
+        "De microfoon kon niet worden aangepast. Je kunt het ook zelf doen via Configuratiescherm > Apparaten en printers > je oortjes > Eigenschappen > Services > Handsfree-telefonie.");
     public static string FirstRun => T("Earlo runs in the notification area. Click its icon to open it.",
         "Earlo staat in het systeemvak (bij de klok). Klik op het icoon om het te openen.");
 }
