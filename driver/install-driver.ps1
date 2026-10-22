@@ -1,4 +1,4 @@
-# Installs the PodPilot AAP bridge driver (test-signed build).
+# Installs the Earlo AAP bridge driver (test-signed build).
 # Run from the unzipped driver folder in an elevated PowerShell:
 #   powershell -ExecutionPolicy Bypass -File install-driver.ps1
 #
@@ -39,5 +39,5 @@ pnputil /add-driver $inf /install
 if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne 3010) { throw "pnputil failed with exit code $LASTEXITCODE" }
 
 Write-Host ""
-Write-Host "Done. Make sure your AirPods are paired with Windows, open the case, then start PodPilot."
-Write-Host "If nothing happens, check Device Manager > Bluetooth for 'PodPilot AAP Bridge'."
+Write-Host "Done. Make sure your AirPods are paired with Windows, open the case, then start Earlo."
+Write-Host "If nothing happens, check Device Manager > Bluetooth for 'Earlo AAP Bridge'."

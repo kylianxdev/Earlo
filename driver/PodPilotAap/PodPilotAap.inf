@@ -1,8 +1,8 @@
 ;
-; PodPilotAap.inf - PodPilot AAP bridge (Bluetooth profile driver for AirPods and Beats)
+; PodPilotAap.inf - Earlo AAP bridge (Bluetooth profile driver for AirPods and Beats)
 ;
 ; Loads on the AirPods' vendor service {4715650b-5e9d-4ac2-b898-a4fc0aa5df78} and opens
-; Apple's AAP channel (L2CAP PSM 0x1001) for PodPilot.
+; Apple's AAP channel (L2CAP PSM 0x1001) for Earlo.
 ;
 
 [Version]
@@ -24,9 +24,9 @@ DefaultDestDir = 13
 PodPilotAap.sys = 1,,
 
 [Manufacturer]
-%ProviderName% = PodPilot,NT$ARCH$.10.0...16299
+%ProviderName% = Earlo,NT$ARCH$.10.0...16299
 
-[PodPilot.NT$ARCH$.10.0...16299]
+[Earlo.NT$ARCH$.10.0...16299]
 ; Any device exposing the AAP service
 %AapDevice.DeviceDesc% = PodPilotAap_Device, BTHENUM\{4715650b-5e9d-4ac2-b898-a4fc0aa5df78}
 ; Per model: VID 0x004C (Apple), PID = model id
@@ -67,7 +67,7 @@ PodPilotAap.sys
 AddReg = PodPilotAap_Security
 
 [PodPilotAap_Security]
-; SYSTEM and Administrators full access, interactive users read/write (PodPilot runs as the user)
+; SYSTEM and Administrators full access, interactive users read/write (Earlo runs as the user)
 HKR,,Security,,"D:P(A;;GA;;;SY)(A;;GA;;;BA)(A;;GRGW;;;IU)"
 
 [PodPilotAap_Device.NT.Services]
@@ -87,7 +87,7 @@ KmdfService = PodPilotAap, PodPilotAap_WdfSection
 KmdfLibraryVersion = $KMDFVERSION$
 
 [Strings]
-ProviderName         = "PodPilot"
-DiskName             = "PodPilot AAP Installation Disk"
-AapDevice.DeviceDesc = "PodPilot AAP Bridge"
-ServiceDesc          = "PodPilot AAP Bridge Driver"
+ProviderName         = "Earlo"
+DiskName             = "Earlo AAP Installation Disk"
+AapDevice.DeviceDesc = "Earlo AAP Bridge"
+ServiceDesc          = "Earlo AAP Bridge Driver"

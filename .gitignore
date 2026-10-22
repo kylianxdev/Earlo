@@ -6,5 +6,5 @@ preview/
 .vs/
 .vscode/
 TestResults/
-podpilot-log.txt
-src/PodPilot.App/DriverPackage/
+earlo-log.txt
+src/Earlo.App/DriverPackage/

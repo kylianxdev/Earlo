@@ -1,5 +1,5 @@
 # Builds 1920x1080 Store screenshots in store/Screenshots from the popup renders in docs/screenshots.
-# Run tools after: PodPilot.exe --render-preview docs\screenshots
+# Run tools after: Earlo.exe --render-preview docs\screenshots
 Add-Type -AssemblyName System.Drawing
 
 $root = Split-Path $PSScriptRoot -Parent

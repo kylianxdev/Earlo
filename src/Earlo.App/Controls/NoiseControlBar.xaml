@@ -1,0 +1,59 @@
+<UserControl x:Class="Earlo.App.Controls.NoiseControlBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:app="clr-namespace:Earlo.App">
+    <UserControl.Resources>
+        <Style x:Key="ModeButton" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Margin" Value="2" />
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bg" CornerRadius="10" Padding="4,7" Background="Transparent">
+                            <ContentPresenter HorizontalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource BarTrack}" />
+                            </Trigger>
+                            <Trigger Property="Tag" Value="Selected">
+                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource Accent}" />
+                                <Setter Property="Foreground" Value="White" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Border CornerRadius="12" Padding="2" Background="{DynamicResource SubtleFill}">
+        <UniformGrid x:Name="Buttons" Rows="1">
+            <Button x:Name="OffButton" Style="{StaticResource ModeButton}" Click="OnModeClick" ToolTip="{x:Static app:Strings.ModeOffTip}">
+                <StackPanel>
+                    <TextBlock Text="&#xE7F6;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="16" HorizontalAlignment="Center" />
+                    <TextBlock Text="{x:Static app:Strings.ModeOff}" FontSize="11" Margin="0,3,0,0" HorizontalAlignment="Center" />
+                </StackPanel>
+            </Button>
+            <Button x:Name="AncButton" Style="{StaticResource ModeButton}" Click="OnModeClick" ToolTip="{x:Static app:Strings.ModeAncTip}">
+                <StackPanel>
+                    <TextBlock Text="&#xE74F;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="16" HorizontalAlignment="Center" />
+                    <TextBlock Text="{x:Static app:Strings.ModeAnc}" FontSize="11" Margin="0,3,0,0" HorizontalAlignment="Center" />
+                </StackPanel>
+            </Button>
+            <Button x:Name="TransparencyButton" Style="{StaticResource ModeButton}" Click="OnModeClick" ToolTip="{x:Static app:Strings.ModeTransparencyTip}">
+                <StackPanel>
+                    <TextBlock Text="&#xE995;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="16" HorizontalAlignment="Center" />
+                    <TextBlock Text="{x:Static app:Strings.ModeTransparency}" FontSize="11" Margin="0,3,0,0" HorizontalAlignment="Center" />
+                </StackPanel>
+            </Button>
+            <Button x:Name="AdaptiveButton" Style="{StaticResource ModeButton}" Click="OnModeClick" ToolTip="{x:Static app:Strings.ModeAdaptiveTip}">
+                <StackPanel>
+                    <TextBlock Text="&#xE945;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="16" HorizontalAlignment="Center" />
+                    <TextBlock Text="{x:Static app:Strings.ModeAdaptive}" FontSize="11" Margin="0,3,0,0" HorizontalAlignment="Center" />
+                </StackPanel>
+            </Button>
+        </UniformGrid>
+    </Border>
+</UserControl>

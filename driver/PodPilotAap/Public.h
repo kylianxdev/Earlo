@@ -1,6 +1,6 @@
 /*
- * PodPilot AAP bridge: interface shared between the kernel driver and user mode.
- * Mirrored in C# by src/PodPilot.Core/Aap/DriverProtocol.cs. Keep both in sync.
+ * Earlo AAP bridge: interface shared between the kernel driver and user mode.
+ * Mirrored in C# by src/Earlo.Core/Aap/DriverProtocol.cs. Keep both in sync.
  *
  * One device interface exists per paired AirPods (the driver loads on the AirPods' AAP
  * service). User mode opens it, sends CONNECT to open L2CAP PSM 0x1001, then exchanges

@@ -1,4 +1,4 @@
-# Removes the PodPilot AAP bridge driver. Run in an elevated PowerShell.
+# Removes the Earlo AAP bridge driver. Run in an elevated PowerShell.
 #Requires -RunAsAdministrator
 
 $ErrorActionPreference = 'Stop'

@@ -1,5 +1,5 @@
 """
-Renders the Galaxy Buds artwork in src/PodPilot.App/Assets/Devices (galaxy-*.png).
+Renders the Galaxy Buds artwork in src/Earlo.App/Assets/Devices (galaxy-*.png).
 
 Every model is built from signed distance functions, meshed with marching cubes and rendered
 with Cycles on a transparent background, in the same three-quarter studio view as the AirPods
@@ -994,7 +994,7 @@ def main():
     parser.add_argument("models", nargs="*", default=list(MODELS))
     parser.add_argument("--samples", type=int, default=128)
     parser.add_argument("--size", type=int, default=1000)
-    parser.add_argument("--out", default=os.path.join(here, "..", "src", "PodPilot.App", "Assets", "Devices"))
+    parser.add_argument("--out", default=os.path.join(here, "..", "src", "Earlo.App", "Assets", "Devices"))
     args = parser.parse_args()
     for name in args.models:
         render(name, args.out, args.samples, args.size)

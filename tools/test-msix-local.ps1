@@ -20,8 +20,8 @@ if ($Remove) {
 }
 
 $publishPath = Join-Path $root $Publish
-if (-not (Test-Path (Join-Path $publishPath 'PodPilot.exe'))) {
-    dotnet publish (Join-Path $root 'src/PodPilot.App') -c Release -r win-x64 --self-contained -p:PodPilotFlavor=store -o $publishPath
+if (-not (Test-Path (Join-Path $publishPath 'Earlo.exe'))) {
+    dotnet publish (Join-Path $root 'src/Earlo.App') -c Release -r win-x64 --self-contained -p:EarloFlavor=store -o $publishPath
     if ($LASTEXITCODE -ne 0) { throw 'dotnet publish failed' }
 }
 
@@ -45,5 +45,5 @@ foreach ($name in 'Square150x150Logo', 'Square44x44Logo', 'StoreLogo', 'Wide310x
     Set-Content (Join-Path $stage 'AppxManifest.xml') -Encoding utf8
 
 Add-AppxPackage -Register (Join-Path $stage 'AppxManifest.xml')
-Write-Host 'Installed. Start PodPilot from the Start menu, then sign out and in to test the startup task.'
+Write-Host 'Installed. Start Earlo from the Start menu, then sign out and in to test the startup task.'
 Write-Host 'Remove it again with: powershell -File tools/test-msix-local.ps1 -Remove'
