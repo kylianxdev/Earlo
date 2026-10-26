@@ -19,6 +19,11 @@
 </p>
 
 <p align="center">
+  <a href="../../releases/latest"><b>Download Earlo for Windows</b></a>: free, a single <code>.exe</code>, no account.<br>
+  <sub>Is Earlo useful to you? A ⭐ on this repo helps other people find it.</sub>
+</p>
+
+<p align="center">
   <img src="docs/screenshots/popup-ear-detection.png" width="300" alt="Earlo popup showing AirPods Pro battery levels and which earbud is in your ear">
   <img src="docs/screenshots/popup-noise-control.png" width="300" alt="Popup with noise control buttons">
   <img src="docs/screenshots/popup-galaxy-buds.png" width="300" alt="Popup for Samsung Galaxy Buds2 Pro">
@@ -109,6 +114,11 @@ They then always play in stereo; the catch is that their microphone no longer wo
 Yes. Beats earbuds and headphones work like AirPods. Galaxy Buds, from the 2019 Buds to the Buds3 Pro and Buds Core,
 report exact battery levels once they are connected to your PC.
 
+**How is Earlo different from MagicPods and AirPodsDesktop?**
+MagicPods is a polished Microsoft Store app with its own noise control driver, but it is closed source.
+AirPodsDesktop is free and open source, but has no noise control, no Galaxy Buds and no ARM64 builds.
+Earlo is free and MIT-licensed, noise control driver included, and runs on x64 and ARM64 PCs.
+
 **Is Earlo free?**
 Yes, free and open source here on GitHub. The [Microsoft Store](#microsoft-store) version costs about €1 and funds signing the driver.
 
@@ -165,7 +175,7 @@ that does the rest for you. Without the driver, everything else in Earlo works a
 
 ## Help unlock noise control for everyone
 
-We figured out how to switch AirPods noise control on Windows, the thing people have wanted for years. The driver is written, open source and it works.
+Earlo switches AirPods noise control on Windows with a driver that is fully open source, the thing people have wanted for years. The driver is written and it works.
 The only thing between you and a one-click install is a signature from Microsoft.
 
 To sign a driver, Microsoft requires an EV code signing certificate, and those cost up to **about €700 per year**, every year. Blame Microsoft.
